@@ -1,10 +1,11 @@
-import org.apache.spark.SparkContext._
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{col, column, desc, least, max,min, rank, when}
+import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.functions.{col, column, desc, expr, least, lit, max, min, rank, struct, udf, when}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, greatest, lit, struct}
-import  org.apache.spark.sql.functions.expr
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+import org.apache.spark
+
 
 
 object bigdata {
@@ -12,8 +13,10 @@ object bigdata {
 
   def main(args: Array[String]): Unit = {
 
+    Logger.getLogger("org").setLevel(Level.WARN)
+    Logger.getLogger("akka").setLevel(Level.WARN)
+
     val conf = new SparkConf().setMaster("local[2]").setAppName("Skyline")
-    val sc = new SparkContext(conf)
     val sparkSession = SparkSession.builder
       .config(conf = conf)
       .appName("Skyline")
@@ -21,14 +24,28 @@ object bigdata {
 
 
 
-    val df = sparkSession.read.option("header", "true").csv("//src//main//resource//Normal.csv")
+
+    val df = sparkSession.read.option("header", "true").csv("src/main/Resource/Normal.csv")
 
     val X = df.select("id","0").withColumn("rank_X",rank().over(Window.orderBy("0")))
     val Y = df.select("id","1").withColumn("rank_Y",rank().over(Window.orderBy("1")))
 
     val Ranks =  X.join(Y, "id")
-    val Max_X = Ranks.drop("0","1").filter("rank_X>rank_Y")//.drop("rank_Y")
-    val Max_Y = Ranks.drop("0","1").filter("rank_X<rank_Y")//.drop("rank_X")
+
+    val find_worst = udf((row:Row) => {
+      val x = row.getInt(0)
+      val y = row.getInt(1)
+      if (x > y)
+        "y"
+      else
+        "x"
+    })
+
+    val worst_df = Ranks.drop("0","1")
+      .withColumn("worst", find_worst(struct(col("rank_X"), col("rank_Y"))))//.drop("rank_Y")
+
+    val Max_X = worst_df.filter(col("worst") === "x")
+    val Max_Y =  worst_df.filter(col("worst") === "y")//.drop("rank_X")
 
     //val Rank = Ranks.drop("0","1").withColumn("max", greatest("rank_X", "rank_Y"))
 
@@ -44,17 +61,18 @@ object bigdata {
 
 
 
+//
+//    println(df.show())
+//    println(X.show())
+//    println(Y.show())
 
-    println(df.show())
-    println(X.show())
-    println(Y.show())
+    println("Max_X\n", Max_X.show())
+    println("Max_Y\n", Max_Y.show())
+    println("minx\n",minx.show())
+    print("miny\n",miny.show())
+    println("Skyline\n",Skyline.show())
+    println(Skyline.count())
 
-    //println(Max_Y.show())
-    //println(minx.show())
-    //print(miny.show())
-    //println(Skyline.show())
-    //println(Skyline.count())
-    //println(Max_X.show())
 
 
 
