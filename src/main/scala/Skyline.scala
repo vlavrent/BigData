@@ -25,6 +25,7 @@ import org.apache.spark
 
 
     val df = sparkSession.read.option("header", "true").csv("src/main/Resource/Normal.csv")
+      .select(col("0").alias("x"), col("1").alias("y"), col("id"))
 
 
     val X = df.select("id","0").withColumn("rank_X",rank().over(Window.orderBy("0")))
@@ -34,12 +35,11 @@ import org.apache.spark
 
     //val mapRank = Ranks.rdd.map(row => row(0) -> (row.getDouble(2),row.getDouble(4))).collectAsMap()
 
-    Ranks.createOrReplaceTempView("LEFT_RANK")
-    Ranks.createOrReplaceTempView("RIGHT_RANK")
+    Ranks.createOrReplaceTempView("RANK")
     //SQL JOIN
     val joinDF = sparkSession.sql("select l.id AS lid, r.id AS rid " +
-      "from LEFT_RANK l, RIGHT_RANK r " +
-      "where l.rank_Y < r.rank_Y and l.rank_X < r.rank_X ")
+      "from RANK l, RANK r " +
+      "where l.rank_X < r.rank_X and l.rank_Y < r.rank_Y ")
 
     val scoresDF = joinDF.groupBy("lid")
       .agg(collect_list("rid").alias("dominated_set"))
