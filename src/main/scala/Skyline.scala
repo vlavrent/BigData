@@ -1,6 +1,6 @@
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{Row, SparkSession}
-import org.apache.spark.sql.functions.{col, column, desc, expr, least, lit, max, min, rank, struct, udf, when}
+import org.apache.spark.sql.functions.{col, collect_list, size, column, desc, expr, least, lit, max, min, rank, struct, udf, when}
 import org.apache.spark.sql.expressions.Window
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
@@ -33,6 +33,20 @@ import org.apache.spark
 
 
     //val mapRank = Ranks.rdd.map(row => row(0) -> (row.getDouble(2),row.getDouble(4))).collectAsMap()
+
+    Ranks.createOrReplaceTempView("LEFT_RANK")
+    Ranks.createOrReplaceTempView("RIGHT_RANK")
+    //SQL JOIN
+    val joinDF = sparkSession.sql("select l.id AS lid, r.id AS rid " +
+      "from LEFT_RANK l, RIGHT_RANK r " +
+      "where l.rank_Y < r.rank_Y and l.rank_X < r.rank_X ")
+
+    val scoresDF = joinDF.groupBy("lid")
+      .agg(collect_list("rid").alias("dominated_set"))
+      .withColumn("score", size(col("dominated_set"))).drop("dominated_set")
+
+    print(scoresDF.show())
+//    scoresDF.write.csv("output/scores")
 
 
     val miny = Ranks.withColumn("Min", min("rank_Y").over(Window.orderBy("rank_X")))
