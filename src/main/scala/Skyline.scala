@@ -16,7 +16,7 @@ import org.apache.spark
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val conf = new SparkConf().setMaster("local[2]").setAppName("Skyline")
+    val conf = new SparkConf().setMaster("local[6]").setAppName("Skyline")
     val sparkSession = SparkSession.builder
       .config(conf = conf)
       .appName("Skyline")
@@ -28,37 +28,27 @@ import org.apache.spark
       .select(col("0").alias("x"), col("1").alias("y"), col("id"))
 
 
-    val X = df.select("id","0").withColumn("rank_X",rank().over(Window.orderBy("0")))
-    val Y = df.select("id","1").withColumn("rank_Y",rank().over(Window.orderBy("1")))
-    val Ranks =  X.join(Y, "id")
-
 
     //val mapRank = Ranks.rdd.map(row => row(0) -> (row.getDouble(2),row.getDouble(4))).collectAsMap()
-
-    Ranks.createOrReplaceTempView("RANK")
+    df.createOrReplaceTempView("RANK")
     //SQL JOIN
     val joinDF = sparkSession.sql("select l.id AS lid, r.id AS rid " +
       "from RANK l, RANK r " +
-      "where l.rank_X < r.rank_X and l.rank_Y < r.rank_Y ")
+      "where l.x < r.x and l.y < r.y ")
+
 
     val scoresDF = joinDF.groupBy("lid")
       .agg(collect_list("rid").alias("dominated_set"))
       .withColumn("score", size(col("dominated_set"))).drop("dominated_set")
 
-    print(scoresDF.show())
-//    scoresDF.write.csv("output/scores")
+    val skyline = scoresDF.join(joinDF.select("lid").except(joinDF.select("rid")),Seq("lid"))
+
+    //println(skyline.sort(col("score").desc).show(10))
+    //println(scoresDF.sort(col("score").desc).show(10))
 
 
-    val miny = Ranks.withColumn("Min", min("rank_Y").over(Window.orderBy("rank_X")))
-    val sky = miny.filter(col("rank_Y")===col("Min"))
-    val skyline = sky.drop("0","1","rank_X","rank_Y","Min")
-    
-    println(miny.show())
-    println(sky.show())
-    println(skyline.show())
-
-
-
+    //scoresDF.write.csv("D://Vicky//Data and Web Science//Big Data//Dominate.csv")
+    //skyline.write.csv("D://Vicky//Data and Web Science//Big Data//Skyline.csv")
 
 
 
