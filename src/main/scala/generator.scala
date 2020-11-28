@@ -48,11 +48,9 @@ object generator {
   def main(args: Array[String]): Unit = {
     generator.generate(1000, "correlated")
     generator.generate(10000, "correlated")
-    generator.generate(50000, "correlated")
     generator.generate(100000, "correlated")
     generator.generate(1000, "uniform")
     generator.generate(10000, "uniform")
-    generator.generate(50000, "uniform")
     generator.generate(100000, "uniform")
   }
 }

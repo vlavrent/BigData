@@ -1,6 +1,6 @@
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{Row, SparkSession}
-import org.apache.spark.sql.functions.{col, collect_list, size, column, desc, expr, least, lit, max, min, rank, struct, udf, when}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.functions.{col, collect_list, column, desc, expr, least, lit, max, min, rank, size, struct, udf, when}
 import org.apache.spark.sql.expressions.Window
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
