@@ -30,7 +30,14 @@ object generator {
       val generated_points = mvg.sample(numOfPoints)
 
       val writer = new PrintWriter(new File(distribution + "\\" + distribution + numOfPoints + ".csv"))
-      generated_points.foreach(vec => writer.write(vec(0) + ","+ vec(1)+ "\n"))
+      //"target\\scala-2.11\\"
+      writer.write("0,1,id\n")
+      var id = 1
+      for (point <- generated_points ){
+        writer.write(point(0) + ","+ point(1)+ "," + id + "\n")
+        id += 1
+      }
+
       writer.close()
     }
     else if (distribution == "uniform"){
@@ -48,7 +55,9 @@ object generator {
   def main(args: Array[String]): Unit = {
     generator.generate(1000, "correlated")
     generator.generate(10000, "correlated")
+    generator.generate(50000, "correlated")
     generator.generate(100000, "correlated")
+    generator.generate(500000, "correlated")
     generator.generate(1000, "uniform")
     generator.generate(10000, "uniform")
     generator.generate(100000, "uniform")

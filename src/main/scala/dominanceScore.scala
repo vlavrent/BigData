@@ -1,7 +1,11 @@
+import java.lang.Thread.sleep
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.functions.{col, collect_list, size}
+import org.apache.spark.sql.functions.{broadcast, col, collect_list, size, udf}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import scala.sys.exit
 
 
 object dominanceScore {
@@ -16,12 +20,11 @@ object dominanceScore {
    */
   def calculate_dominance_score(df:DataFrame, sparkSession: SparkSession): DataFrame ={
 
-    df.createOrReplaceTempView("df")
+    //JOIN
+    val joinDF = df.as("df1")
+      .join(df.as("df2"), col("df1.x") < col("df2.x") &&  col("df1.y") < col("df2.y"))
+      .select(col("df1.id").alias("lid"), col("df2.id").alias("rid"))
 
-    //SQL JOIN
-    val joinDF = sparkSession.sql("select l.id AS lid, r.id AS rid " +
-      "from df l, df r " +
-      "where l.x < r.x and l.y < r.y ")
 
     val scored_df_without_zero = joinDF.groupBy(col("lid").alias("id"))
       .agg(size(collect_list("rid")).alias("score"))
@@ -36,14 +39,14 @@ object dominanceScore {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val conf = new SparkConf().setMaster("local[6]").setAppName("Skyline")
+    val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline").set("spark.executor.memory", "12g")
     val sparkSession = SparkSession.builder
       .config(conf = conf)
       .appName("Skyline")
       .getOrCreate()
 
 
-    val df = sparkSession.read.option("header", "true").csv("src/main/Resource/Normal.csv")
+    val df = sparkSession.read.option("header", "true").csv("correlated/correlated50000.csv")
       .select(col("0").alias("x"), col("1").alias("y"), col("id"))
 
     //    val x_mean = df.select(avg("x")).first().getDouble(0)
@@ -57,6 +60,8 @@ object dominanceScore {
     //    val dominated_quartile_count = quartile_4.count()
 
     val scoresDf = calculate_dominance_score(df, sparkSession)
+
+//    sparkSession.time(scoresDf.sort(col("score").desc).limit(5).write.format("com.databricks.")
 
     print(sparkSession.time(scoresDf.sort(col("score").desc).take(k).mkString("(", ", ", ")")))
   }
