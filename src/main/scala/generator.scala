@@ -44,8 +44,11 @@ object generator {
       val un = Uniform(10, 40)
 
       val generated_points = DenseMatrix.rand(numOfPoints, 2, un)
-
-      csvwrite(new File(distribution + "\\" + distribution + numOfPoints + ".csv") , generated_points, separator = ',')
+      val  file = new File(distribution + "\\" + distribution + numOfPoints + ".csv")
+      val writer = new PrintWriter(file)
+      writer.write("0,1,id\n")
+      //"target\\scala-2.11\\"
+      csvwrite( file, generated_points, separator = ',')
 
     }
 
