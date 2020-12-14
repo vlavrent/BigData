@@ -29,7 +29,7 @@ object generator {
 
       val generated_points = mvg.sample(numOfPoints)
 
-      val writer = new PrintWriter(new File(distribution + "\\" + distribution + numOfPoints + ".csv"))
+      val writer = new PrintWriter(new File(distribution + "/" + distribution + numOfPoints + ".csv"))
       //"target\\scala-2.11\\"
       writer.write("0,1,id\n")
       var id = 1
@@ -44,12 +44,23 @@ object generator {
       val un = Uniform(10, 40)
 
       val generated_points = DenseMatrix.rand(numOfPoints, 2, un)
-      val  file = new File(distribution + "\\" + distribution + numOfPoints + ".csv")
+      val  file = new File(distribution + "/" + distribution + numOfPoints + ".csv")
       val writer = new PrintWriter(file)
       writer.write("0,1,id\n")
       //"target\\scala-2.11\\"
-      csvwrite( file, generated_points, separator = ',')
+      var index = 0
+      var id = 0
+      for (point <- generated_points.activeValuesIterator){
+        if (index%2 == 0){
+          writer.write(point + ",")
+        }else{
+          writer.write(point + "," + id + "\n")
+          id += 1
+        }
+        index += 1
+      }
 
+      writer.close()
     }
 
 
@@ -63,6 +74,8 @@ object generator {
     generator.generate(500000, "correlated")
     generator.generate(1000, "uniform")
     generator.generate(10000, "uniform")
+    generator.generate(50000, "uniform")
     generator.generate(100000, "uniform")
+    generator.generate(500000, "uniform")
   }
 }

@@ -76,7 +76,8 @@ object dominanceScore {
       .getOrCreate()
 
     //correlated/correlated50000.csv
-    val df = sparkSession.read.option("header", "true").csv("correlated/correlated100000.csv")
+    //uniform/uniform1000.csv
+    val df = sparkSession.read.option("header", "true").csv("uniform/uniform1000.csv")
       .select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
 
     val x_mean = df.select(avg("x")).first().getDouble(0)
