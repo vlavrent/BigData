@@ -159,21 +159,43 @@ object dominanceScore {
 		val x_mean = df.select(avg("x")).first().getDouble(0)
 		val y_mean = df.select(avg("y")).first().getDouble(0)
 
+		val x_max = df.select(max("x")).first().getDouble(0)
+		val y_max = df.select(max("y")).first().getDouble(0)
 
 		val x_axis = create_grid_axis(x_mean)
 		val y_axis = create_grid_axis(y_mean)
 
 		val grid_cells_to_check = create_grid_cells_to_check(x_axis.size, y_axis.size)
 
-		var points_to_check = 1
+		var cells_to_check_together = 1
 
 		for(grid_cell <-  grid_cells_to_check){
 
-			val x_line = x_axis(grid_cell._1)
-			val y_line = y_axis(grid_cell._2)
+			println(grid_cell)
+			var x_line_right = x_max
+			if (grid_cell._1 != x_axis.size) {
+				x_line_right =  x_axis(grid_cell._1)
+			}
+			var x_line_left = .0
+			if (grid_cell._1 != 0){
+				x_line_left = x_axis(grid_cell._1 - 1)
+			}
 
-			val
-			println(x_line, y_line)
+			var y_line_up = y_max
+			if (grid_cell._2 != y_axis.size) {
+				y_line_up =  y_axis(grid_cell._2)
+			}
+			var y_line_down = .0
+			if (grid_cell._2 != 0){
+				y_line_down = y_axis(grid_cell._2 - 1)
+			}
+
+			val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
+
+			println(cell_dominator.show())
+
+
 		}
 
 		exit()
