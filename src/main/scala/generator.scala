@@ -72,6 +72,7 @@ object generator {
     generator.generate(50000, "correlated")
     generator.generate(100000, "correlated")
     generator.generate(500000, "correlated")
+    generator.generate(100, "uniform")
     generator.generate(1000, "uniform")
     generator.generate(10000, "uniform")
     generator.generate(30000, "uniform")

@@ -80,6 +80,66 @@ object dominanceScore {
 
 		List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
 	}
+
+	def create_grid_cells_to_check(x_axis_size:Int, y_axis_size:Int): ListBuffer[(Int,Int)] ={
+		var grid_cells_to_check = new ListBuffer[(Int, Int)]()
+
+		for(grid_point <- (0 to x_axis_size) zip (0 to y_axis_size)){
+
+			grid_cells_to_check += Tuple2(grid_point._1, grid_point._2)
+			if (grid_point._1 - 1 < 0  && grid_point._2 - 1 < 0){
+
+				grid_cells_to_check += Tuple2(grid_point._1 + 1, grid_point._2)
+				grid_cells_to_check += Tuple2(grid_point._1, grid_point._2 + 1)
+			}
+			else if(grid_point._1  < x_axis_size  && grid_point._2  < y_axis_size){
+
+				var j = grid_point._2 + 1
+				breakable(
+					for (i <- grid_point._1 - 1 to 0 by -1){
+						grid_cells_to_check += Tuple2(i, j)
+						j += 1
+						if(j > y_axis_size)
+							break()
+					}
+				)
+
+				var i = grid_point._1 + 1
+				breakable(
+					for (j <- grid_point._2 - 1 to 0 by -1){
+						grid_cells_to_check += Tuple2(i, j)
+						i += 1
+						if(i > x_axis_size)
+							break()
+					}
+				)
+
+				// include odd cells
+				var k = grid_point._1 + 1
+				breakable(
+					for (h <- grid_point._2 to 0 by -1){
+						grid_cells_to_check += Tuple2(k, h)
+						k += 1
+						if(k > x_axis_size)
+							break()
+					}
+				)
+
+				var h = grid_point._2 + 1
+				breakable(
+					for (k <- grid_point._1 to 0 by -1){
+						grid_cells_to_check += Tuple2(k, h)
+						h += 1
+						if(h > y_axis_size)
+							break()
+					}
+				)
+			}
+
+		}
+
+		grid_cells_to_check
+	}
 	def task2(k:Int, dataset_path:String): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
@@ -93,7 +153,7 @@ object dominanceScore {
 
 		//correlated/correlated50000.csv
 		//uniform/uniform1000.csv
-		val df = sparkSession.read.option("header", "true").csv("src/main/Resource/Normal.csv")
+		val df = sparkSession.read.option("header", "true").csv("uniform/uniform100.csv")
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
 
 		val x_mean = df.select(avg("x")).first().getDouble(0)
@@ -103,78 +163,19 @@ object dominanceScore {
 		val x_axis = create_grid_axis(x_mean)
 		val y_axis = create_grid_axis(y_mean)
 
-		println(x_axis.size)
-		var grid_cells_to_check = new ListBuffer[(Int, Int)]()
+		val grid_cells_to_check = create_grid_cells_to_check(x_axis.size, y_axis.size)
 
-		for(grid_point <- (0 to x_axis.size) zip (0 to y_axis.size)){
-
-			grid_cells_to_check += Tuple2(grid_point._1, grid_point._2)
-			if (grid_point._1 - 1 < 0  && grid_point._2 - 1 < 0){
-
-				grid_cells_to_check += Tuple2(grid_point._1 + 1, grid_point._2)
-				grid_cells_to_check += Tuple2(grid_point._1, grid_point._2 + 1)
-			}
-			else if(grid_point._1  < x_axis.size  && grid_point._2  < y_axis.size){
-
-				var j = grid_point._2 + 1
-				breakable(
-					for (i <- grid_point._1 - 1 to 0 by -1){
-						grid_cells_to_check += Tuple2(i, j)
-						j += 1
-						if(j > y_axis.size)
-							break()
-					}
-				)
-
-				var i = grid_point._1 + 1
-				breakable(
-					for (j <- grid_point._2 - 1 to 0 by -1){
-						grid_cells_to_check += Tuple2(i, j)
-						i += 1
-						if(i > x_axis.size)
-							break()
-					}
-				)
-
-				// include odd cells
-				var k = grid_point._1 + 1
-				breakable(
-					for (h <- grid_point._2 to 0 by -1){
-						grid_cells_to_check += Tuple2(k, h)
-						k += 1
-						if(k > x_axis.size)
-							break()
-					}
-				)
-
-				var h = grid_point._2 + 1
-				breakable(
-					for (k <- grid_point._1 to 0 by -1){
-						grid_cells_to_check += Tuple2(k, h)
-						h += 1
-						if(h > y_axis.size)
-							break()
-					}
-				)
-			}
-
-		}
-
-		println(grid_cells_to_check.toList)
-		println(grid_cells_to_check.size)
-		exit()
-		var x_index = 0
-		var y_index = 0
 		var points_to_check = 1
 
-		while (true){
+		for(grid_cell <-  grid_cells_to_check){
 
-			for(check <-  1 to points_to_check){
-				println(x_index, y_index)
-			}
+			val x_line = x_axis(grid_cell._1)
+			val y_line = y_axis(grid_cell._2)
 
-			exit()
+			val
+			println(x_line, y_line)
 		}
+
 		exit()
 
 		def flag_point(x_mean:Double, y_mean:Double) = udf((x:Double, y:Double) => {
