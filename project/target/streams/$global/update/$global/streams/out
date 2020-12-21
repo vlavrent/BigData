@@ -1,4 +1,4 @@
-[info] Updating {file:/home/cogian/IdeaProjects/BigData/project/}bigdata-build...
+[info] Updating {file:/Users/cogian/IdeaProjects/BigData/project/}bigdata-build...
 [debug] :: resolving dependencies :: default#bigdata-build;0.1-SNAPSHOT
 [debug] 	confs: [compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool]
 [debug] 	validate = true
@@ -6009,19 +6009,19 @@
 [debug] 	[NOT REQUIRED] org.scala-sbt#template-resolver;0.1!template-resolver.jar
 [debug] 	[NOT REQUIRED] org.scala-lang#jline;2.10.7!jline.jar
 [debug] 	[NOT REQUIRED] org.fusesource.jansi#jansi;1.4!jansi.jar
-[debug] :: resolution report :: resolve 848ms :: artifacts dl 13ms
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT compile produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-compile.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT runtime produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-runtime.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT test produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-test.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT provided produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-provided.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT optional produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-optional.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT compile-internal produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-compile-internal.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT runtime-internal produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-runtime-internal.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT test-internal produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-test-internal.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT plugin produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-plugin.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT sources produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-sources.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT docs produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-docs.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT pom produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-pom.xml
-[debug] 	report for default#bigdata-build;0.1-SNAPSHOT scala-tool produced in /home/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-scala-tool.xml
-[debug] 	resolve done (848ms resolve - 13ms download)
+[debug] :: resolution report :: resolve 4563ms :: artifacts dl 73ms
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT compile produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-compile.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT runtime produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-runtime.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT test produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-test.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT provided produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-provided.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT optional produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-optional.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT compile-internal produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-compile-internal.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT runtime-internal produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-runtime-internal.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT test-internal produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-test-internal.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT plugin produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-plugin.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT sources produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-sources.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT docs produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-docs.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT pom produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-pom.xml
+[debug] 	report for default#bigdata-build;0.1-SNAPSHOT scala-tool produced in /Users/cogian/IdeaProjects/BigData/project/target/scala-2.10/sbt-0.13/resolution-cache/reports/default-bigdata-build-scala-tool.xml
+[debug] 	resolve done (4563ms resolve - 73ms download)
 [info] Done updating.
