@@ -1,9 +1,12 @@
 import java.lang.Thread.sleep
+import java.util.regex.Pattern
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.functions.{avg, broadcast, col, collect_list, lit, max, mean, not, size, sum, udf}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+
 import scala.util.control.Breaks._
 import scala.collection.mutable.ListBuffer
 import scala.sys.exit
@@ -140,6 +143,37 @@ object dominanceScore {
 
 		grid_cells_to_check
 	}
+
+	def get_cell_borders(x_max:Double,
+											 x_axis_size:Int,
+											 y_max:Double,
+											 y_axis_size:Int,
+											 grid_cell:(Int, Int),
+											 x_axis:List[Double],
+											 y_axis:List[Double]): List[Double] ={
+
+		var x_line_right = x_max
+		if (grid_cell._1 != x_axis_size) {
+			x_line_right =  x_axis(grid_cell._1)
+		}
+		var x_line_left = .0
+		if (grid_cell._1 != 0){
+			x_line_left = x_axis(grid_cell._1 - 1)
+		}
+
+		var y_line_up = y_max
+		if (grid_cell._2 != y_axis_size) {
+			y_line_up =  y_axis(grid_cell._2)
+		}
+		var y_line_down = .0
+		if (grid_cell._2 != 0){
+			y_line_down = y_axis(grid_cell._2 - 1)
+		}
+
+		List(x_line_left, x_line_right, y_line_up, y_line_down)
+	}
+
+
 	def task2(k:Int, dataset_path:String): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
@@ -153,7 +187,7 @@ object dominanceScore {
 
 		//correlated/correlated50000.csv
 		//uniform/uniform1000.csv
-		val df = sparkSession.read.option("header", "true").csv("uniform/uniform100.csv")
+		val df = sparkSession.read.option("header", "true").csv("correlated/correlated1000_2d.csv")
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
 
 		val x_mean = df.select(avg("x")).first().getDouble(0)
@@ -168,35 +202,53 @@ object dominanceScore {
 		val grid_cells_to_check = create_grid_cells_to_check(x_axis.size, y_axis.size)
 
 		var cells_to_check_together = 1
+		var low_diagonal = true
 
-		for(grid_cell <-  grid_cells_to_check){
+		var index = 0
+		breakable(
+			while(true){
+				for (_ <- 0 until cells_to_check_together){
+					//to do here the code
+					println(grid_cells_to_check(index))
+					index += 1
+				}
 
-			println(grid_cell)
-			var x_line_right = x_max
-			if (grid_cell._1 != x_axis.size) {
-				x_line_right =  x_axis(grid_cell._1)
+				if(low_diagonal)
+					cells_to_check_together += 1
+				else
+					cells_to_check_together -= 1
+
+				if(cells_to_check_together == x_axis.size + 1)
+					low_diagonal = false
+
+				if(index == grid_cells_to_check.size)
+					break()
+				println("===========")
 			}
-			var x_line_left = .0
-			if (grid_cell._1 != 0){
-				x_line_left = x_axis(grid_cell._1 - 1)
-			}
+		)
+//		for(index <- grid_cells_to_check.indices){
+//
+//			val borders = get_cell_borders(
+//				x_max,
+//				x_axis.size,
+//				y_max,
+//				y_axis.size,
+//				grid_cell,
+//				x_axis,
+//				y_axis)
+//
+//			val x_line_left = borders(0)
+//			val x_line_right = borders(1)
+//			val y_line_up = borders(2)
+//			val y_line_down = borders(3)
+//
+//			val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+//				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
+//
+//			println(cell_dominator.show())
 
-			var y_line_up = y_max
-			if (grid_cell._2 != y_axis.size) {
-				y_line_up =  y_axis(grid_cell._2)
-			}
-			var y_line_down = .0
-			if (grid_cell._2 != 0){
-				y_line_down = y_axis(grid_cell._2 - 1)
-			}
 
-			val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
-				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
-
-			println(cell_dominator.show())
-
-
-		}
+//		}
 
 		exit()
 
