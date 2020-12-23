@@ -50,17 +50,7 @@ object Skyline_4d {
       .select(col("0").alias("x"), col("1").alias("y"),col("2").alias("z"), col("3").alias("w"), col("id"))
 
 
-    //val x_mean = df.select(avg("x")).first().getDouble(0)
-    //val y_mean = df.select(avg("y")).first().getDouble(0)
-    //val z_mean = df.select(avg("z")).first().getDouble(0)
-
-
-    //val quartile_1 = df.filter("x <" + x_mean + " AND  y <" + y_mean) //down left
-    //val quartile_2 = df.filter("x <" + x_mean + " AND  y >" + y_mean) //up left
-    //val quartile_3 = df.filter("x >" + x_mean + " AND  y <" + y_mean)
-
-
-    //val sky = quartile_1.union(quartile_2).union(quartile_3)
+ 
     val sky = df
 
 
