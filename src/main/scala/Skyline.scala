@@ -43,7 +43,7 @@ import scala.collection.mutable.ListBuffer
      Logger.getLogger("org").setLevel(Level.WARN)
      Logger.getLogger("akka").setLevel(Level.WARN)
 
-     val conf = new SparkConf().setMaster("local[10]").set("spark.executor.cores", "5").set("spark.executor.instances", "4").setAppName("Skyline")
+     val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline")
      val sparkSession = SparkSession.builder
        .config(conf = conf)
        .appName("Skyline")
@@ -92,8 +92,8 @@ import scala.collection.mutable.ListBuffer
 
    def main(args: Array[String]): Unit = {
 
-     val k = args(0)
-     val dataset_path = "src/main/Resource/Normal.csv"
+
+     val dataset_path = args(1)
 
      task1(dataset_path)
 
