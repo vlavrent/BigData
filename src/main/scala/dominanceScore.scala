@@ -22,41 +22,11 @@ object dominanceScore {
 	 *  @param sparkSession the spark session to call sql
 	 *  @return a dataframe of points with their dominance score
 	 */
-	def calculate_dominance_score(df1:DataFrame, df2:DataFrame, sparkSession: SparkSession): DataFrame ={
+	def calculate_dominance_score(df1:DataFrame, df2:DataFrame, sparkSession: SparkSession, scoreToAdd:Int): DataFrame ={
 
 		//JOIN !(col("df1.flag") === "dl" && col("df2.flag") === "ur")
 		val joinDF = df1.as("df1")
-			.join(df2.as("df2"), (col("df1.x") < col("df2.x") &&  col("df1.y") < col("df2.y"))
-				||  (col("df2.x") < col("df1.x") &&  col("df2.y") < col("df1.y")))
-
-		val left_dominant_joinDF = joinDF.select(col("df1.id").alias("lid"),
-			col("df2.id").alias("rid"))
-			.where(col("df1.x") < col("df2.x") &&  col("df1.y") < col("df2.y"))
-
-		val right_dominant_joinDF = joinDF.select(col("df2.id").alias("lid"),
-			col("df1.id").alias("rid"))
-			.where(col("df2.x") < col("df1.x") &&  col("df2.y") < col("df1.y"))
-
-		joinDF.unpersist()
-		val final_joinDF = left_dominant_joinDF.union(right_dominant_joinDF).distinct()
-		left_dominant_joinDF.unpersist()
-		right_dominant_joinDF.unpersist()
-
-		val scored_df_without_zero = final_joinDF.groupBy(col("lid").alias("id"))
-			.agg(size(collect_list("rid")).alias("score"))
-			.select(col("id"), col("score"))
-		final_joinDF.unpersist()
-
-		val scored_df = df1.select("id").join(scored_df_without_zero, Seq("id"), "full_outer").na.fill(0, Seq("score"))
-		scored_df_without_zero.unpersist()
-		scored_df
-	}
-
-	def calculate_dominance_score_in_quartile(df1:DataFrame, sparkSession: SparkSession, scoreToAdd:Int): DataFrame ={
-
-		//JOIN !(col("df1.flag") === "dl" && col("df2.flag") === "ur")
-		val joinDF = df1.as("df1")
-			.join(df1.as("df2"), (col("df1.x") < col("df2.x") &&  col("df1.y") < col("df2.y")))
+			.join(df2.as("df2"), (col("df1.x") < col("df2.x") &&  col("df1.y") < col("df2.y")))
 			.select(col("df1.id").alias("lid"),
 				col("df2.id").alias("rid"))
 
@@ -65,9 +35,9 @@ object dominanceScore {
 			.agg(size(collect_list("rid")).alias("counted_score"))
 			.withColumn("score", lit(scoreToAdd) + col("counted_score"))
 			.select(col("id"), col("score"))
-		joinDF.unpersist()
+
 		val scored_df = df1.select("id").join(scored_df_without_zero, Seq("id"), "full_outer").na.fill(scoreToAdd, Seq("score"))
-		scored_df_without_zero.unpersist()
+
 		scored_df
 	}
 
@@ -75,7 +45,7 @@ object dominanceScore {
 		val axis_point4 = axis_mean
 		val axis_point2 = axis_point4 / 2.0
 		val axis_point1 = axis_point2 / 2.0
-		val axis_point3 = (axis_point2 / 2.0) + axis_point2
+		val axis_point3 = axis_point1 + axis_point2
 
 		val axis_point6 = axis_point2 + axis_point4
 		val axis_point5 = axis_point1 + axis_point4
@@ -187,7 +157,7 @@ object dominanceScore {
 
 		//correlated/correlated50000.csv
 		//uniform/uniform1000.csv
-		val df = sparkSession.read.option("header", "true").csv("correlated/correlated1000_2d.csv")
+		val df = sparkSession.read.option("header", "true").csv("uniform/uniform1000000_2d.csv")
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
 
 		val x_mean = df.select(avg("x")).first().getDouble(0)
@@ -203,19 +173,26 @@ object dominanceScore {
 
 		var cells_to_check_together = 1
 		var low_diagonal = true
-
 		var index = 0
+
+
+		import sparkSession.implicits._
+
+
+		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
+
 		breakable(
-			while(true){
+			while(scoresDf.count().toInt < 10 ){
 				for (_ <- 0 until cells_to_check_together){
 					//to do here the code
-					println(grid_cells_to_check(index))
+//					println(grid_cells_to_check(index))
+					val grid_cell = grid_cells_to_check(index)
 					val borders = get_cell_borders(
 						x_max,
 						x_axis.size,
 						y_max,
 						y_axis.size,
-						grid_cells_to_check(index),
+						grid_cell,
 						x_axis,
 						y_axis)
 
@@ -224,11 +201,24 @@ object dominanceScore {
 					val y_line_up = borders(2)
 					val y_line_down = borders(3)
 
-					val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+					val cell_dominator_df = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
 						" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
 
-					println(cell_dominator.show())
+					val cells_to_check_dominance_df = df.filter(
+						"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
+							" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
 
+					val guarantee_dominance_score = df.filter(
+						" x > " + x_line_right + " AND y > " + y_line_up + " AND y > " + y_line_down ).count().toInt
+
+					val cell_scores_df = calculate_dominance_score(
+						cell_dominator_df,
+						cells_to_check_dominance_df.union(cell_dominator_df),
+						sparkSession,
+						guarantee_dominance_score
+					)
+
+					scoresDf = scoresDf.union(cell_scores_df)
 					index += 1
 				}
 
@@ -246,72 +236,12 @@ object dominanceScore {
 			}
 		)
 
+		println(scoresDf.sort(col("score").desc).show(10))
 		exit()
 
-		def flag_point(x_mean:Double, y_mean:Double) = udf((x:Double, y:Double) => {
-
-			if(x < x_mean && y < y_mean)
-				"dl"
-			else if (x < x_mean && y > y_mean)
-				"ul"
-			else if (x > x_mean && y < y_mean)
-				"dr"
-			else
-				"ur"
-		})
-
-		//    val flagged_df = df.
-		//      withColumn("flag", flag_point(x_mean,y_mean)(col("x"), col("y")))
-
-		val quartile_1 = df.filter("x >" + x_mean + " AND  y >" + y_mean) //up right
-		val quartile_2 = df.filter("x <" + x_mean + " AND  y >" + y_mean) //up left
-		val quartile_3 = df.filter("x <" + x_mean + " AND  y <" + y_mean) //down left
-		val quartile_4 = df.filter("x >" + x_mean + " AND  y <" + y_mean) //down right
-
-		val quartile_1_count = quartile_1.count()
-		df.unpersist()
-		def initialize_score(score_for_dl:Long) = udf((flag:String) => {
-			if (flag == "dl")
-				score_for_dl.toInt
-			else
-				0
-		})
-
-		//    val initialized_quartile_1 = quartile_1.withColumn("initial_score", lit(0))
-		//    val initialized_quartile_2 = quartile_2.withColumn("initial_score", lit(0))
-		//    val initialized_quartile_3 = quartile_3.withColumn("initial_score", lit(0))
-		//    val initialized_quartile_4 = quartile_4.withColumn("initial_score", lit(0))
-		//    val initial_scored_df = flagged_df.
-		//      withColumn("initial_score", initialize_score(dominated_quartile_count)(col("flag")))
-
-		//    print(initialized_quartile_1.show())
-		//    print(initialized_quartile_2.show())
-		//    print(initialized_quartile_3.show())
-		//    print(initialized_quartile_4.show())
-
-
-		val scored_quartile_2_3_1 = calculate_dominance_score(quartile_2,quartile_2.union(quartile_3).union(quartile_1),
-			sparkSession)
-
-		quartile_2.unpersist()
-		val scored_quartile_4_3_1 = calculate_dominance_score(quartile_4, quartile_4.union(quartile_3).union(quartile_1),
-			sparkSession)
-		quartile_4.unpersist()
-		val scored_quartile_1 = calculate_dominance_score_in_quartile(quartile_1, sparkSession, 0)
-		quartile_1.unpersist()
-		val scored_quartile_3 = calculate_dominance_score_in_quartile(quartile_3, sparkSession, quartile_1_count.toInt)
-		quartile_3.unpersist()
-
-		val scoresDf = scored_quartile_2_3_1.union(scored_quartile_4_3_1).union(scored_quartile_1).union(scored_quartile_3)
-			.groupBy(col("id")).agg(sum(col("score")).alias("score"))
-
-		scored_quartile_2_3_1.unpersist()
-		scored_quartile_4_3_1.unpersist()
-		scored_quartile_1.unpersist()
-		scored_quartile_3.unpersist()
 		//    sparkSession.time(scoresDf.sort(col("score").desc).limit(5).write.format("com.databricks.")
 
-		print(sparkSession.time(scoresDf.sort(col("score").desc).take(k).mkString("(", ", ", ")")))
+//		print(sparkSession.time(scoresDf.sort(col("score").desc).take(k).mkString("(", ", ", ")")))/\
 	}
 
 	def main(args: Array[String]): Unit = {
