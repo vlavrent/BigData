@@ -210,6 +210,25 @@ object dominanceScore {
 				for (_ <- 0 until cells_to_check_together){
 					//to do here the code
 					println(grid_cells_to_check(index))
+					val borders = get_cell_borders(
+						x_max,
+						x_axis.size,
+						y_max,
+						y_axis.size,
+						grid_cells_to_check(index),
+						x_axis,
+						y_axis)
+
+					val x_line_left = borders(0)
+					val x_line_right = borders(1)
+					val y_line_up = borders(2)
+					val y_line_down = borders(3)
+
+					val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+						" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
+
+					println(cell_dominator.show())
+
 					index += 1
 				}
 
@@ -226,29 +245,6 @@ object dominanceScore {
 				println("===========")
 			}
 		)
-//		for(index <- grid_cells_to_check.indices){
-//
-//			val borders = get_cell_borders(
-//				x_max,
-//				x_axis.size,
-//				y_max,
-//				y_axis.size,
-//				grid_cell,
-//				x_axis,
-//				y_axis)
-//
-//			val x_line_left = borders(0)
-//			val x_line_right = borders(1)
-//			val y_line_up = borders(2)
-//			val y_line_down = borders(3)
-//
-//			val cell_dominator = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
-//				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
-//
-//			println(cell_dominator.show())
-
-
-//		}
 
 		exit()
 

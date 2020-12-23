@@ -17,7 +17,7 @@ object generator {
     }
     val writer = new PrintWriter(new File(distribution + "/" + distribution + numOfPoints + "_" + dimensions + "d.csv"))
 
-    for(dim <- 0 to dimensions)
+    for(dim <- 0 until dimensions)
       writer.write(dim + ",")
     writer.write("id\n")
 
