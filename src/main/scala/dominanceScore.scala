@@ -157,7 +157,7 @@ object dominanceScore {
 
 		//correlated/correlated50000.csv
 		//uniform/uniform1000.csv
-		val df = sparkSession.read.option("header", "true").csv("uniform/uniform1000000_2d.csv")
+		val df = sparkSession.read.option("header", "true").csv("correlated/correlated1000000_2d.csv")
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
 
 		val x_mean = df.select(avg("x")).first().getDouble(0)
@@ -203,22 +203,25 @@ object dominanceScore {
 
 					val cell_dominator_df = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
 						" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
+					if (cell_dominator_df.count() != 0){
 
-					val cells_to_check_dominance_df = df.filter(
-						"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
-							" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
+						val cells_to_check_dominance_df = df.filter(
+							"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
+								" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
 
-					val guarantee_dominance_score = df.filter(
-						" x > " + x_line_right + " AND y > " + y_line_up + " AND y > " + y_line_down ).count().toInt
+						val guarantee_dominance_score = df.filter(
+							" x > " + x_line_right + " AND y > " + y_line_up + " AND y > " + y_line_down ).count().toInt
 
-					val cell_scores_df = calculate_dominance_score(
-						cell_dominator_df,
-						cells_to_check_dominance_df.union(cell_dominator_df),
-						sparkSession,
-						guarantee_dominance_score
-					)
+						val cell_scores_df = calculate_dominance_score(
+							cell_dominator_df,
+							cells_to_check_dominance_df.union(cell_dominator_df),
+							sparkSession,
+							guarantee_dominance_score)
 
-					scoresDf = scoresDf.union(cell_scores_df)
+						scoresDf = scoresDf.union(cell_scores_df)
+					}
+
+
 					index += 1
 				}
 
