@@ -4,62 +4,129 @@ import breeze.stats.distributions.MultivariateGaussian
 import breeze.stats.distributions.Uniform
 import breeze.linalg._
 
+import scala.collection.mutable.ListBuffer
+
 object generator {
 
-  def generate(numOfPoints:Int, distribution:String): Unit ={
+  def generate_kd(numOfPoints:Int, distribution:String, dimensions:Int): Unit ={
 
 
     val directory = new File(distribution)
     if (!directory.exists) {
       directory.mkdir
     }
+    val writer = new PrintWriter(new File(distribution + "/" + distribution + numOfPoints + "_" + dimensions + "d.csv"))
+
+    for(dim <- 0 until dimensions)
+      writer.write(dim + ",")
+    writer.write("id\n")
 
     if (distribution == "correlated") {
-      val var1 = 20.0
-      val var2 = 20.0
-      val cov = 18.5
 
-      val covariance_matrix = DenseMatrix(
-        (var1, cov),
-        (cov, var2))
+      val var_value = 50.0
 
-      val mu = DenseVector(var1, var2)
+      val cov_value = 45.0
+
+      var covariance_matrix = DenseMatrix(
+        (var_value, cov_value),
+        (cov_value, var_value))
+      var mu = DenseVector(var_value, var_value)
+      if (dimensions == 3){
+        covariance_matrix = DenseMatrix(
+          (var_value, cov_value, cov_value),
+          (cov_value, var_value, cov_value),
+          (cov_value, cov_value, var_value))
+        mu = DenseVector(var_value, var_value, var_value)
+      }else if (dimensions == 4){
+        covariance_matrix = DenseMatrix(
+          (var_value, cov_value, cov_value, cov_value),
+          (cov_value, var_value, cov_value, cov_value),
+          (cov_value, cov_value, var_value, cov_value),
+          (cov_value, cov_value, cov_value, var_value))
+        mu = DenseVector(var_value, var_value, var_value, var_value)
+
+      }
 
       val mvg = MultivariateGaussian(mu, covariance_matrix)
 
       val generated_points = mvg.sample(numOfPoints)
 
-      val writer = new PrintWriter(new File(distribution + "\\" + distribution + numOfPoints + ".csv"))
-      //"target\\scala-2.11\\"
-      writer.write("0,1,id\n")
       var id = 1
       for (point <- generated_points ){
-        writer.write(point(0) + ","+ point(1)+ "," + id + "\n")
+        for(dim <- 0 until dimensions)
+          writer.write(point(dim)  + ",")
+        writer.write(id + "\n")
         id += 1
       }
 
-      writer.close()
     }
     else if (distribution == "uniform"){
-      val un = Uniform(10, 40)
+      val un = Uniform(10, 100)
 
-      val generated_points = DenseMatrix.rand(numOfPoints, 2, un)
+      val generated_points = DenseMatrix.rand(numOfPoints, dimensions, un)
 
-      csvwrite(new File(distribution + "\\" + distribution + numOfPoints + ".csv") , generated_points, separator = ',')
+      var index = 1
+      var id = 0
+      for (point <- generated_points.activeValuesIterator){
+        if (index%dimensions == 0){
+          writer.write(point + "," + id + "\n")
+          id += 1
+        }else{
+          writer.write(point + ",")
+        }
+        index += 1
+      }
 
     }
-
+    writer.close()
 
   }
 
   def main(args: Array[String]): Unit = {
-    generator.generate(1000, "correlated")
-    generator.generate(10000, "correlated")
-    generator.generate(50000, "correlated")
-    generator.generate(100000, "correlated")
-    generator.generate(500000, "correlated")
-    generator.generate(1000, "uniform")
-    generator.generate(10000, "uniform")
-    generator.generate(100000, "uniform")
+    generator.generate_kd(1000, "correlated", 2)
+    generator.generate_kd(10000, "correlated", 2)
+    generator.generate_kd(50000, "correlated", 2)
+    generator.generate_kd(100000, "correlated", 2)
+    generator.generate_kd(500000, "correlated", 2)
+    generator.generate_kd(1000000, "correlated", 2)
+    generator.generate_kd(100, "uniform", 2)
+    generator.generate_kd(1000, "uniform", 2)
+    generator.generate_kd(10000, "uniform", 2)
+    generator.generate_kd(30000, "uniform", 2)
+    generator.generate_kd(50000, "uniform", 2)
+    generator.generate_kd(100000, "uniform", 2)
+    generator.generate_kd(500000, "uniform", 2)
+    generator.generate_kd(1000000, "uniform", 2)
+
+    generator.generate_kd(1000, "correlated", 3)
+    generator.generate_kd(10000, "correlated", 3)
+    generator.generate_kd(50000, "correlated", 3)
+    generator.generate_kd(100000, "correlated", 3)
+    generator.generate_kd(500000, "correlated", 2)
+    generator.generate_kd(1000000, "correlated", 3)
+    generator.generate_kd(100, "uniform", 3)
+    generator.generate_kd(1000, "uniform", 3)
+    generator.generate_kd(10000, "uniform", 3)
+    generator.generate_kd(30000, "uniform", 3)
+    generator.generate_kd(50000, "uniform", 3)
+    generator.generate_kd(100000, "uniform", 3)
+    generator.generate_kd(500000, "uniform", 3)
+    generator.generate_kd(1000000, "uniform", 3)
+
+    generator.generate_kd(1000, "correlated", 4)
+    generator.generate_kd(10000, "correlated", 4)
+    generator.generate_kd(50000, "correlated", 4)
+    generator.generate_kd(100000, "correlated", 4)
+    generator.generate_kd(500000, "correlated", 4)
+    generator.generate_kd(1000000, "correlated", 4)
+    generator.generate_kd(100, "uniform", 4)
+    generator.generate_kd(1000, "uniform", 4)
+    generator.generate_kd(10000, "uniform", 4)
+    generator.generate_kd(30000, "uniform", 4)
+    generator.generate_kd(50000, "uniform", 4)
+    generator.generate_kd(100000, "uniform", 4)
+    generator.generate_kd(500000, "uniform", 4)
+    generator.generate_kd(1000000, "uniform", 4)
+
   }
 }

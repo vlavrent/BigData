@@ -29,7 +29,7 @@ import scala.collection.mutable.ListBuffer
 
 
      val please = res.select("rank_y").map(_.getLong(0)).collect.toList
-     var min_y = df.count()
+     var min_y = df.count()+1
      var values = new ListBuffer[Long]()
 
 
