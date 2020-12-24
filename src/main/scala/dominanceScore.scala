@@ -4,6 +4,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.functions.{avg, col, max}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.SparkSession
+
 import scala.util.control.Breaks._
 
 object dominanceScore {
@@ -33,68 +34,50 @@ object dominanceScore {
 		val x_axis = create_grid_axis(x_mean)
 		val y_axis = create_grid_axis(y_mean)
 
-		val grid_cells_to_check = create_grid_cells_to_check_2d(x_axis.size, y_axis.size)
+		val grid_cells_to_check = create_grid_cells_to_check_2d(
+			x_axis.size,
+			y_axis.size,
+			df,
+			x_max,
+			y_max,
+			x_axis,
+			y_axis,
+			k)
 
-		var cells_to_check_together = 1
-		var low_diagonal = true
-		var index = 0
+		println("cells to check: " + grid_cells_to_check.size)
+		println("points to check: " + grid_cells_to_check.map(_._2._1).sum)
 
+		var points_checked = 0
 		import sparkSession.implicits._
 
 		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
 
-		breakable(
-			while(scoresDf.count().toInt < k ){
-				for (_ <- 0 until cells_to_check_together){
+		for(grid_cell <- grid_cells_to_check){
 
-					val grid_cell = grid_cells_to_check(index)
-					val borders = get_cell_borders(
-						x_max,
-						y_max,
-						grid_cell,
-						x_axis,
-						y_axis)
+			val x_line_left = grid_cell._2._2
+			val x_line_right = grid_cell._2._3
+			val y_line_up = grid_cell._2._4
+			val y_line_down = grid_cell._2._5
 
-					val x_line_left = borders(0)
-					val x_line_right = borders(1)
-					val y_line_up = borders(2)
-					val y_line_down = borders(3)
+			val cell_dominator_df = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
 
-					val cell_dominator_df = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
-						" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
-					if (cell_dominator_df.count() != 0){
+			val cells_to_check_dominance_df = df.filter(
+				"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
+					" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
 
-						val cells_to_check_dominance_df = df.filter(
-							"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
-								" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
+			val guarantee_dominance_score = grid_cell._3._1
 
-						val guarantee_dominance_score = df.filter(
-							" x > " + x_line_right + " AND y > " + y_line_up + " AND y > " + y_line_down ).count().toInt
+			val cell_scores_df = calculate_dominance_score_2d(
+				cell_dominator_df,
+				cells_to_check_dominance_df.union(cell_dominator_df),
+				sparkSession,
+				guarantee_dominance_score)
 
-						val cell_scores_df = calculate_dominance_score_2d(
-							cell_dominator_df,
-							cells_to_check_dominance_df.union(cell_dominator_df),
-							sparkSession,
-							guarantee_dominance_score)
+			scoresDf = scoresDf.union(cell_scores_df)
 
-						scoresDf = scoresDf.union(cell_scores_df)
-					}
+		}
 
-					index += 1
-				}
-
-				if(low_diagonal)
-					cells_to_check_together += 1
-				else
-					cells_to_check_together -= 1
-
-				if(cells_to_check_together == x_axis.size + 1)
-					low_diagonal = false
-
-				if(index == grid_cells_to_check.size)
-					break()
-			}
-		)
 		// time counting needs fixing
 		println(sparkSession.time(scoresDf.sort(col("score").desc).show(k)))
 	}

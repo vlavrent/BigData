@@ -5,6 +5,7 @@ import org.apache.spark.sql.functions.{col, collect_list, lit, size}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ListBuffer
+import scala.sys.exit
 import scala.util.control.Breaks.{break, breakable}
 
 object dominanceScore_2d_utils {
@@ -51,7 +52,31 @@ object dominanceScore_2d_utils {
 		val axis_point5 = axis_point1 + axis_point4
 		val axis_point7 = axis_point3 + axis_point4
 
-		List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
+		val axis_point05 = axis_point1 / 2.0
+		val axis_point15 = axis_point1 + axis_point05
+		val axis_point25 = axis_point2 + axis_point05
+		val axis_point35 = axis_point3 + axis_point05
+		val axis_point45 = axis_point4 + axis_point05
+		val axis_point55 = axis_point5 + axis_point05
+		val axis_point65 = axis_point6 + axis_point05
+		val axis_point75 = axis_point7 + axis_point05
+//		List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
+		List(
+			axis_point05,
+			axis_point1,
+			axis_point15,
+			axis_point2,
+			axis_point25,
+			axis_point3,
+			axis_point35,
+			axis_point4,
+			axis_point45,
+			axis_point5,
+			axis_point55,
+			axis_point6,
+			axis_point65,
+			axis_point7,
+			axis_point75)
 	}
 
 	/** Creates the grid cells
@@ -60,26 +85,99 @@ object dominanceScore_2d_utils {
 	 *  @param y_axis_size size of y axis
 	 *  @return a list with cells ordered by queue the must be checked
 	 */
-	def create_grid_cells_to_check_2d(x_axis_size:Int, y_axis_size:Int): ListBuffer[(Int,Int)] ={
-		var grid_cells_to_check = new ListBuffer[(Int, Int)]()
+	def create_grid_cells_to_check_2d(x_axis_size:Int,
+																		y_axis_size:Int,
+																		df: DataFrame,
+																		x_max:Double,
+																		y_max:Double,
+																		x_axis:List[Double],
+																		y_axis:List[Double],
+																		k:Int): ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))] ={
 
-		for(y_point <- 0 to y_axis_size){
-			var x_point = 0
-			for(i <- y_point to 0 by -1){
-				grid_cells_to_check.append((x_point,i))
-				x_point += 1
+		var grid_cells_with_counts = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double))]
+		for(i <- 0 to x_axis_size){
+			for(j <- 0 to y_axis_size){
+				val grid_cell = (i, j)
+				val borders = get_cell_borders(
+					x_max,
+					y_max,
+					grid_cell,
+					x_axis,
+					y_axis)
+
+				val x_line_left = borders(0)
+				val x_line_right = borders(1)
+				val y_line_up = borders(2)
+				val y_line_down = borders(3)
+
+				val number_of_points_in_cell = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+					" AND " + " x > " + x_line_left + " AND  y > " + y_line_down).count().toInt
+
+//
+				grid_cells_with_counts.append(
+					(grid_cell, (number_of_points_in_cell, x_line_left, x_line_right, y_line_up, y_line_down)))
+
 			}
 		}
 
-		for(x_point <- 1 to x_axis_size){
-			var y_point = y_axis_size
-			for(i <- x_point to x_axis_size){
-				grid_cells_to_check.append((i,y_point))
-				y_point -= 1
+		val grid_cells_with_counts_map = grid_cells_with_counts.toMap
+
+		var candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double))]
+		for(grid_cell <- grid_cells_with_counts_map){
+			var number_of_dominating_points = 0
+
+			for(dominating_cell <- (grid_cell._1._1 -1 to 0 by -1, grid_cell._1._2 - 1 to 0 by -1).zipped.toList){
+				if(dominating_cell._1 >= 0 && dominating_cell._2 >= 0) {
+					number_of_dominating_points += grid_cells_with_counts_map(dominating_cell)._1
+				}
 			}
+
+
+			if(number_of_dominating_points < k && grid_cell._2._1 > 0)
+				candidate_grid_cells.append(grid_cell)
 		}
 
-		grid_cells_to_check
+		var candidate_grid_cells_with_bound_scores =  new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))]
+		for(grid_cell <- candidate_grid_cells){
+
+			var partially_dominated_points_count = 0
+			var j = grid_cell._1._2
+			for(i <- grid_cell._1._1 to x_axis_size){
+				partially_dominated_points_count += grid_cells_with_counts_map((i,j))._1
+			}
+
+			var i = grid_cell._1._1
+			for(j <- grid_cell._1._2 to y_axis_size){
+				partially_dominated_points_count += grid_cells_with_counts_map((i,j))._1
+			}
+
+			partially_dominated_points_count -= grid_cell._2._1
+
+			var partially_and_fully_dominated_points_count = 0
+			for(i <- grid_cell._1._1 to x_axis_size)
+				for(j <- grid_cell._1._2 to y_axis_size)
+					partially_and_fully_dominated_points_count += grid_cells_with_counts_map((i,j))._1
+
+			candidate_grid_cells_with_bound_scores.append(
+				(grid_cell._1,
+					grid_cell._2,
+					(partially_and_fully_dominated_points_count - partially_dominated_points_count,
+						partially_and_fully_dominated_points_count)))
+		}
+
+		var lower_bound_score = -1
+		for( grid_cell <- candidate_grid_cells_with_bound_scores)
+			if(grid_cell._2._1 >= k && grid_cell._3._1 > lower_bound_score)
+				lower_bound_score = grid_cell._3._1
+
+
+		var prunned_candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))]
+		for( grid_cell <- candidate_grid_cells_with_bound_scores)
+			if(grid_cell._3._2 >= lower_bound_score)
+				prunned_candidate_grid_cells.append(grid_cell)
+
+
+		prunned_candidate_grid_cells
 	}
 
 
