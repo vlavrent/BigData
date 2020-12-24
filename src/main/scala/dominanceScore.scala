@@ -33,7 +33,7 @@ object dominanceScore {
 		val x_axis = create_grid_axis(x_mean)
 		val y_axis = create_grid_axis(y_mean)
 
-		val grid_cells_to_check = create_grid_cells_to_check(x_axis.size, y_axis.size)
+		val grid_cells_to_check = create_grid_cells_to_check_2d(x_axis.size, y_axis.size)
 
 		var cells_to_check_together = 1
 		var low_diagonal = true

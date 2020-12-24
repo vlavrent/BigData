@@ -1,5 +1,6 @@
 package DominanceScoreUtils
 
+import breeze.linalg.max
 import org.apache.spark.sql.functions.{col, collect_list, lit, size}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -55,68 +56,33 @@ object dominanceScore_2d_utils {
 
 	/** Creates the grid cells
 	 *
-	 *  @param axis_mean 1st given dataframe
-	 *  @return a list with axis' lines
+	 *  @param x_axis_size size of x axis
+	 *  @param y_axis_size size of y axis
+	 *  @return a list with cells ordered by queue the must be checked
 	 */
-	def create_grid_cells_to_check(x_axis_size:Int, y_axis_size:Int): ListBuffer[(Int,Int)] ={
+	def create_grid_cells_to_check_2d(x_axis_size:Int, y_axis_size:Int): ListBuffer[(Int,Int)] ={
 		var grid_cells_to_check = new ListBuffer[(Int, Int)]()
 
-		for(grid_point <- (0 to x_axis_size) zip (0 to y_axis_size)){
-
-			grid_cells_to_check += Tuple2(grid_point._1, grid_point._2)
-			if (grid_point._1 - 1 < 0  && grid_point._2 - 1 < 0){
-
-				grid_cells_to_check += Tuple2(grid_point._1 + 1, grid_point._2)
-				grid_cells_to_check += Tuple2(grid_point._1, grid_point._2 + 1)
+		for(y_point <- 0 to y_axis_size){
+			var x_point = 0
+			for(i <- y_point to 0 by -1){
+				grid_cells_to_check.append((x_point,i))
+				x_point += 1
 			}
-			else if(grid_point._1  < x_axis_size  && grid_point._2  < y_axis_size){
+		}
 
-				var j = grid_point._2 + 1
-				breakable(
-					for (i <- grid_point._1 - 1 to 0 by -1){
-						grid_cells_to_check += Tuple2(i, j)
-						j += 1
-						if(j > y_axis_size)
-							break()
-					}
-				)
-
-				var i = grid_point._1 + 1
-				breakable(
-					for (j <- grid_point._2 - 1 to 0 by -1){
-						grid_cells_to_check += Tuple2(i, j)
-						i += 1
-						if(i > x_axis_size)
-							break()
-					}
-				)
-
-				// include odd cells
-				var k = grid_point._1 + 1
-				breakable(
-					for (h <- grid_point._2 to 0 by -1){
-						grid_cells_to_check += Tuple2(k, h)
-						k += 1
-						if(k > x_axis_size)
-							break()
-					}
-				)
-
-				var h = grid_point._2 + 1
-				breakable(
-					for (k <- grid_point._1 to 0 by -1){
-						grid_cells_to_check += Tuple2(k, h)
-						h += 1
-						if(h > y_axis_size)
-							break()
-					}
-				)
+		for(x_point <- 1 to x_axis_size){
+			var y_point = y_axis_size
+			for(i <- x_point to x_axis_size){
+				grid_cells_to_check.append((i,y_point))
+				y_point -= 1
 			}
-
 		}
 
 		grid_cells_to_check
 	}
+
+
 
 	/** Get cell border lines for a given grid cell
 	 *
