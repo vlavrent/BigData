@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 
 import scala.util.control.Breaks._
 
-object dominanceScore {
+object dominanceScore_2d {
 
 	def get_top_k_dominant_2d(k:Int, dataset_path:String): Unit ={
 
@@ -35,8 +35,6 @@ object dominanceScore {
 		val y_axis = create_grid_axis(y_mean)
 
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
-			x_axis.size,
-			y_axis.size,
 			df,
 			x_max,
 			y_max,

@@ -10,7 +10,7 @@ import scala.util.control.Breaks._
 
 object dominanceScore_3d {
 
-	def get_top_k_dominant_2d(k:Int, dataset_path:String): Unit ={
+	def get_top_k_dominant_3d(k:Int, dataset_path:String): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
 		Logger.getLogger("akka").setLevel(Level.WARN)
@@ -43,9 +43,6 @@ object dominanceScore_3d {
 		val z_axis = create_grid_axis(z_mean)
 
 		val grid_cells_to_check = create_grid_cells_to_check_3d(
-			x_axis.size,
-			y_axis.size,
-			z_axis.size,
 			df,
 			x_max,
 			y_max,
@@ -102,7 +99,7 @@ object dominanceScore_3d {
 		val k = args(0)
 		val dataset_path = args(1)
 
-		get_top_k_dominant_2d(k.toInt, dataset_path)
+		get_top_k_dominant_3d(k.toInt, dataset_path)
 	}
 
 

@@ -85,8 +85,7 @@ object dominanceScore_2d_utils {
 	 *  @param y_axis_size size of y axis
 	 *  @return a list with cells ordered by queue the must be checked
 	 */
-	def create_grid_cells_to_check_2d(x_axis_size:Int,
-																		y_axis_size:Int,
+	def create_grid_cells_to_check_2d(
 																		df: DataFrame,
 																		x_max:Double,
 																		y_max:Double,
@@ -94,6 +93,8 @@ object dominanceScore_2d_utils {
 																		y_axis:List[Double],
 																		k:Int): ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))] ={
 
+		val x_axis_size:Int = x_axis.size
+		val y_axis_size:Int = y_axis.size
 		var grid_cells_with_counts = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double))]
 		for(i <- 0 to x_axis_size){
 			for(j <- 0 to y_axis_size){
