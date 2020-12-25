@@ -79,11 +79,15 @@ object dominanceScore_2d_utils {
 			axis_point75)
 	}
 
-	/** Creates the grid cells
+	/** Creates the grid cells to check with pruning
 	 *
-	 *  @param x_axis_size size of x axis
-	 *  @param y_axis_size size of y axis
-	 *  @return a list with cells ordered by queue the must be checked
+	 *  @param df given dataframe size of x axis
+	 *  @param x_max max point of x axis
+	 *  @param y_max max point of y axis
+	 *  @param x_axis list with x axis lines
+	 *  @param y_axis list with x axis lines
+	 *  @param k top k dominant points
+	 *  @return a list with cells that must be checked
 	 */
 	def create_grid_cells_to_check_2d(
 																		df: DataFrame,

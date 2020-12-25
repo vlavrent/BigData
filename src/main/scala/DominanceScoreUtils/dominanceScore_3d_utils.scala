@@ -40,9 +40,17 @@ object dominanceScore_3d_utils {
 
 
 
-	/** Creates the grid cells
-	 *  @param df given dataframe
-	 *  @return a list with cells ordered by queue the must be checked
+	/** Creates the grid cells to check with pruning
+	 *
+	 *  @param df given dataframe size of x axis
+	 *  @param x_max max point of x axis
+	 *  @param y_max max point of y axis
+	 *  @param z_max max point of y axis
+	 *  @param x_axis list with x axis lines
+	 *  @param y_axis list with x axis lines
+	 *  @param z_axis list with x axis lines
+	 *  @param k top k dominant points
+	 *  @return a list with cells that must be checked
 	 */
 	def create_grid_cells_to_check_3d(
 																		df: DataFrame,
