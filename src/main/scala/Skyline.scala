@@ -14,31 +14,23 @@ import scala.collection.mutable.ListBuffer
  object bigdata {
 
 
-   def addColumnIndex(df: DataFrame, sparkSession: SparkSession) = {
-     sparkSession.sqlContext.createDataFrame(
-       df.rdd.zipWithIndex.map {
-         case (row, index) => Row.fromSeq(row.toSeq :+ index+1)
-       },
-       // Create schema for index column
-       StructType(df.schema.fields :+ StructField("index", LongType, false)))
-
-   }
-
-   def Find_mins(df: DataFrame,res: DataFrame,sparkSession: SparkSession) = {
+   def Find_mins(total: DataFrame,rank_x: DataFrame,sparkSession: SparkSession) = {
      import sparkSession.implicits._
 
+     val y_value = total.select(total("y").cast("double")).map(_.getDouble(0)).collect.toList
+     val id = total.select(total("id").cast("Long")).map(_.getLong(0)).collect.toList
+     var min_y = rank_x.select(max("y").cast("double")).first().getDouble(0)
+     var tmin = min_y+1
+     var skyline = new ListBuffer[Long]()
 
-     val please = res.select("rank_y").map(_.getLong(0)).collect.toList
-     var min_y = df.count()+1
-     var values = new ListBuffer[Long]()
+     for((y,idy)<-y_value zip id) if(y<tmin){tmin = y;skyline += idy}
 
+     val values_sky = skyline.toList
 
-     for (name <- please) if(name<min_y){min_y = name ; values += name}
-     val values_sky = values.toList
      values_sky.toDF()
 
    }
-   def task1(dataset_path:String): Unit ={
+   def task1(dataset_path :String): Unit = {
 
      Logger.getLogger("org").setLevel(Level.WARN)
      Logger.getLogger("akka").setLevel(Level.WARN)
@@ -51,55 +43,45 @@ import scala.collection.mutable.ListBuffer
      import sparkSession.implicits._
 
 
-     val k = 10
 
-     val df = sparkSession.read.option("header", "true").csv(dataset_path)
+     val df = sparkSession.read.option("header", "true").csv(dataset_path )
        .select(col("0").alias("x"), col("1").alias("y"), col("id"))
 
 
-     //In Normal Distribution
-     //val x_mean = df.select(avg("x")).first().getDouble(0)
-     //val y_mean = df.select(avg("y")).first().getDouble(0)
-     //val quartile_1 = df.filter("x <" + x_mean + " AND  y <" + y_mean) //down left
-     //val quartile_2 = df.filter("x <" + x_mean + " AND  y >" + y_mean) //up left
-     //val quartile_3 = df.filter("x >" + x_mean + " AND  y <" + y_mean)
-     //val sky = quartile_1.union(quartile_2).union(quartile_3)
+
+     val sort_x = df.orderBy("x")
+     val miny = sort_x.select(min("y")).first().getString(0)
 
 
-     val sky = df
+     val RanksXY = sort_x.select("x","y","id")
 
 
-     val rank_x = sky.sort("x").select("id")
-     val X_RANK = addColumnIndex(rank_x,sparkSession).withColumnRenamed("index","rank_x")
+     val minxy = RanksXY.select(RanksXY("x").cast("String")).where("y=="+miny).first().getString(0)
 
-     val rank_y = sky.sort("y").select("id")
-     val Y_RANK = addColumnIndex(rank_y,sparkSession).withColumnRenamed("index","rank_y")
-
-     val Total_Ranks = X_RANK.join(Y_RANK, "id").sort("rank_x")
-     val miny = Total_Ranks.select(Total_Ranks("rank_x").cast("int")).where("rank_y==1").first().getInt(0)
-     var minx = Total_Ranks.select(Total_Ranks("rank_y").cast("int")).where("rank_x==1").first().getInt(0)
-     val Reduced_Ranks = Total_Ranks.filter("rank_x <= "+miny)
+     val FilterXY = RanksXY.filter("x<="+minxy)
 
 
-     val res = Reduced_Ranks.filter("rank_y >= 1 AND rank_y<="+minx).sort("rank_x")
-     //val skyline = skyline(df,res,SparkSession)
-     val y_mins = Find_mins(df,res,sparkSession).select(col ("value").alias("rank_y"))
-     val skyline = res.join(y_mins,"rank_y").drop("rank_y","rank_x")
-     //println(skyline.show())
-     print(sparkSession.time(skyline.sort(col("score").desc).take(k).mkString("(", ", ", ")")))
+     val SkyXY = Find_mins(FilterXY,RanksXY,sparkSession)
+
+
+     val skyline = SkyXY.select(col("value").alias("id"))
+     print(skyline.show())
+
+
 
    }
-
    def main(args: Array[String]): Unit = {
 
+     val dataset_path = args(0)
+     val k=2
 
-     val dataset_path = args(1)
-
-     task1(dataset_path)
+     val t1 = System.nanoTime
+     task1(dataset_path )
+     val duration = (System.nanoTime - t1)
+     print(duration)
 
 
    }
-
 
 
  }

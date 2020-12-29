@@ -1,48 +1,41 @@
-import Skyline_3d.task1
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, collect_list, size}
-import org.apache.spark.sql.types.{LongType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{collect_list, size}
+import org.apache.spark.sql.functions.{ col, max,min}
+
 
 import scala.collection.mutable.ListBuffer
 
 object Skyline_4d {
-  def addColumnIndex(df: DataFrame, sparkSession: SparkSession) = {
-    sparkSession.sqlContext.createDataFrame(
-      df.rdd.zipWithIndex.map {
-        case (row, index) => Row.fromSeq(row.toSeq :+ index+1)
-      },
-      // Create schema for index column
-      StructType(df.schema.fields :+ StructField("index", LongType, false)))
-
-  }
-
-  def Find_mins(df: DataFrame,res: DataFrame,sparkSession: SparkSession,col_name:String) = {
+  def Find_mins(total: DataFrame,rank_x: DataFrame,sparkSession: SparkSession) = {
     import sparkSession.implicits._
 
+    val y_value = total.select(total("y").cast("double")).map(_.getDouble(0)).collect.toList
+    val id = total.select(total("id").cast("Long")).map(_.getLong(0)).collect.toList
+    var min_y = rank_x.select(max("y").cast("double")).first().getDouble(0)
+    var tmin = min_y+1
+    var skyline = new ListBuffer[Long]()
 
-    val find = res.select(col(col_name)).map(_.getLong(0)).collect.toList
-    var min_y = df.count()+1
-    var values = new ListBuffer[Long]()
+    for((y,idy)<-y_value zip id) if(y<tmin){tmin = y;skyline += idy}
 
+    val values_sky = skyline.toList
 
-    for (name <- find) if(name<min_y){min_y = name ; values += name}
-    val values_sky = values.toList
     values_sky.toDF()
 
   }
-  def task1(dataset_path:String): Unit = {
+  def task1(dataset_path :String): Unit = {
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val conf = new SparkConf().setMaster("local[5]").setAppName("Skyline")
+    val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline")
     val sparkSession = SparkSession.builder
       .config(conf = conf)
       .appName("Skyline")
       .getOrCreate()
     import sparkSession.implicits._
+    //numPartitions
 
 
 
@@ -50,70 +43,45 @@ object Skyline_4d {
       .select(col("0").alias("x"), col("1").alias("y"),col("2").alias("z"), col("3").alias("w"), col("id"))
 
 
-    //val x_mean = df.select(avg("x")).first().getDouble(0)
-    //val y_mean = df.select(avg("y")).first().getDouble(0)
-    //val z_mean = df.select(avg("z")).first().getDouble(0)
+    val sort_x = df.orderBy("x")
+    val miny = sort_x.select(min("y")).first().getString(0)
+    val minz = sort_x.select(min("z")).first().getString(0)
+    val minw = sort_x.select(min("w")).first().getString(0)
 
+    val RanksXY = sort_x.select("x","y","id")
+    val RanksXZ = sort_x.select("x","z","id")
+    val RanksXW = sort_x.select("x","w","id")
 
-    //val quartile_1 = df.filter("x <" + x_mean + " AND  y <" + y_mean) //down left
-    //val quartile_2 = df.filter("x <" + x_mean + " AND  y >" + y_mean) //up left
-    //val quartile_3 = df.filter("x >" + x_mean + " AND  y <" + y_mean)
+    val minxy = RanksXY.select(RanksXY("x").cast("String")).where("y=="+miny).first().getString(0)
+    val minxz = RanksXZ.select(RanksXZ("x").cast("String")).where("z=="+minz).first().getString(0)
+    val minxw = RanksXW.select(RanksXW("x").cast("String")).where("w=="+minw).first().getString(0)
 
+    val FilterXY = RanksXY.filter("x<="+minxy)
+    val FilterXZ = RanksXZ.filter("x<="+minxz)
+    val FilterXW = RanksXW.filter("x<="+minxw)
+    //print(filtered_ranks.show())
+    //print(rank_x.show())
 
-    //val sky = quartile_1.union(quartile_2).union(quartile_3)
-    val sky = df
+    val SkyXY = Find_mins(FilterXY,RanksXY,sparkSession)
+    val SkyXZ = Find_mins(FilterXZ,RanksXZ,sparkSession)
+    val SkyXW = Find_mins(FilterXW,RanksXW,sparkSession)
+    val skyline = SkyXY.union(SkyXZ).union(SkyXW).groupBy(col("value"))
+      .agg(size(collect_list("value")).alias("id"))
+    print(skyline.show())
+    //skyline.write.csv("skyline.csv")
 
-
-    val rank_x = sky.sort("x").select("id")
-    val X_RANK = addColumnIndex(rank_x,sparkSession).withColumnRenamed("index","rank_x")
-
-    val rank_y = sky.sort("y").select("id")
-    val Y_RANK = addColumnIndex(rank_y,sparkSession).withColumnRenamed("index","rank_y")
-
-    val rank_z = sky.sort("z").select("id")
-    val Z_RANK = addColumnIndex(rank_z,sparkSession).withColumnRenamed("index","rank_z")
-
-    val rank_w = sky.sort("w").select("id")
-    val W_RANK = addColumnIndex(rank_w,sparkSession).withColumnRenamed("index","rank_w")
-
-    val Total_Ranks_XY = X_RANK.join(Y_RANK, "id").sort("rank_x")
-    val Total_Ranks_XZ = X_RANK.join(Z_RANK, "id").sort("rank_x")
-    val Total_Ranks_XW = X_RANK.join(W_RANK, "id").sort("rank_x")
-
-
-
-    val miny = Total_Ranks_XY.select(Total_Ranks_XY("rank_x").cast("int")).where("rank_y==1").first().getInt(0)
-    var minxy = Total_Ranks_XY.select(Total_Ranks_XY("rank_y").cast("int")).where("rank_x==1").first().getInt(0)
-    val Reduced_Ranks_XY = Total_Ranks_XY.filter("rank_x <= "+miny)
-    val res_xy = Reduced_Ranks_XY.filter("rank_y >= 1 AND rank_y<="+minxy).sort("rank_x")
-    val y_mins = Find_mins(df,res_xy,sparkSession,"rank_y").select(col ("value").alias("rank_y"))
-
-    val minz = Total_Ranks_XZ.select(Total_Ranks_XZ("rank_x").cast("int")).where("rank_z==1").first().getInt(0)
-    var minxz = Total_Ranks_XZ.select(Total_Ranks_XZ("rank_z").cast("int")).where("rank_x==1").first().getInt(0)
-    val Reduced_Ranks_XZ = Total_Ranks_XZ.filter("rank_x <= "+minz)
-    val res_xz = Reduced_Ranks_XZ.filter("rank_z >= 1 AND rank_z<="+minxz).sort("rank_x")
-    val z_mins = Find_mins(df,res_xz,sparkSession,"rank_z").select(col ("value").alias("rank_z"))
-
-    val minw = Total_Ranks_XW.select(Total_Ranks_XW("rank_x").cast("int")).where("rank_w==1").first().getInt(0)
-    var minxw = Total_Ranks_XW.select(Total_Ranks_XW("rank_w").cast("int")).where("rank_x==1").first().getInt(0)
-    val Reduced_Ranks_XW = Total_Ranks_XW.filter("rank_x <= "+minw)
-    val res_xw = Reduced_Ranks_XW.filter("rank_w >= 1 AND rank_w<="+minxz).sort("rank_x")
-    val w_mins = Find_mins(df,res_xw,sparkSession,"rank_w").select(col ("value").alias("rank_w"))
-
-    val skyline_xy = res_xy.join(y_mins,"rank_y").drop("rank_y","rank_x")
-    val skyline_xz = res_xz.join(z_mins,"rank_z").drop("rank_z","rank_x")
-    val skyline_xw = res_xw.join(w_mins,"rank_w").drop("rank_w","rank_x")
-    val skyline = skyline_xy.union(skyline_xz).union(skyline_xw).groupBy(col("id"))
-      .agg(size(collect_list("id")).alias("num")).drop("num")
-    println(skyline.show())
 
 
   }
-    def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
 
-      val dataset_path = args(1)
+    val dataset_path = args(0)
 
-      task1(dataset_path)
+
+    val t1 = System.nanoTime
+    task1(dataset_path )
+    val duration = (System.nanoTime - t1)
+    print(duration)
 
 
   }
