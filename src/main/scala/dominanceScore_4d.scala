@@ -108,8 +108,7 @@ object dominanceScore_4d {
 
 		}
 
-		// time counting needs fixing
-		println(sparkSession.time(scoresDf.sort(col("score").desc).show(k)))
+		println(scoresDf.sort(col("score").desc).show(k))
 	}
 
 	def main(args: Array[String]): Unit = {
