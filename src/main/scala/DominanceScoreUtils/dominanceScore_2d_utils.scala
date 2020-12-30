@@ -40,9 +40,10 @@ object dominanceScore_2d_utils {
 	/** Creates the axis need for grid using the mean
 	 *
 	 *  @param axis_mean mean of the dataframe
+	 *  @param size size of the axis (4, 8, 16)
 	 *  @return a list with axis' lines
 	 */
-	def create_grid_axis(axis_mean:Double): List[Double] ={
+	def create_grid_axis(axis_mean:Double, size:Int): List[Double] ={
 		val axis_point4 = axis_mean
 		val axis_point2 = axis_point4 / 2.0
 		val axis_point1 = axis_point2 / 2.0
@@ -61,26 +62,27 @@ object dominanceScore_2d_utils {
 		val axis_point65 = axis_point6 + axis_point05
 		val axis_point75 = axis_point7 + axis_point05
 
-//		List(axis_point2, axis_point4, axis_point6)
-
-		List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
-
-//		List(
-//			axis_point05,
-//			axis_point1,
-//			axis_point15,
-//			axis_point2,
-//			axis_point25,
-//			axis_point3,
-//			axis_point35,
-//			axis_point4,
-//			axis_point45,
-//			axis_point5,
-//			axis_point55,
-//			axis_point6,
-//			axis_point65,
-//			axis_point7,
-//			axis_point75)
+		if(size==4)
+			List(axis_point2, axis_point4, axis_point6)
+		else if(size==8)
+			List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
+		else
+			List(
+				axis_point05,
+				axis_point1,
+				axis_point15,
+				axis_point2,
+				axis_point25,
+				axis_point3,
+				axis_point35,
+				axis_point4,
+				axis_point45,
+				axis_point5,
+				axis_point55,
+				axis_point6,
+				axis_point65,
+				axis_point7,
+				axis_point75)
 	}
 
 	/** Creates the grid cells to check with pruning

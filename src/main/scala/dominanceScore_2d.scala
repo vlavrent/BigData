@@ -9,7 +9,7 @@ import scala.util.control.Breaks._
 
 object dominanceScore_2d {
 
-	def get_top_k_dominant_2d(k:Int, dataset_path:String): Unit ={
+	def get_top_k_dominant_2d(k:Int, dataset_path:String, x_axis_size:Int, y_axis_size:Int): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
 		Logger.getLogger("akka").setLevel(Level.WARN)
@@ -31,8 +31,8 @@ object dominanceScore_2d {
 		val x_max = df.select(max("x")).first().getDouble(0)
 		val y_max = df.select(max("y")).first().getDouble(0)
 
-		val x_axis = create_grid_axis(x_mean)
-		val y_axis = create_grid_axis(y_mean)
+		val x_axis = create_grid_axis(x_mean, x_axis_size)
+		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
 			df,
@@ -84,8 +84,9 @@ object dominanceScore_2d {
 
 		val k = args(0)
 		val dataset_path = args(1)
-
-		get_top_k_dominant_2d(k.toInt, dataset_path)
+		val x_axis_size = args(2)
+		val y_axis_size = args(3)
+		get_top_k_dominant_2d(k.toInt, dataset_path, x_axis_size.toInt, y_axis_size.toInt)
 	}
 
 
