@@ -133,7 +133,7 @@ object dominanceScore_2d_utils {
 				axis_point7,
 				axis_point725,
 				axis_point75,
-				axis_point675)
+				axis_point775)
 
 	}
 
