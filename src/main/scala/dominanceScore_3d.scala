@@ -15,10 +15,12 @@ object dominanceScore_3d {
 		Logger.getLogger("org").setLevel(Level.WARN)
 		Logger.getLogger("akka").setLevel(Level.WARN)
 
-		val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline").set("spark.executor.memory", "12g")
+		val conf = new SparkConf()
+			.setMaster("local[*]")
+			.setAppName("DominanceScore2d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size)
+			.set("spark.executor.memory", "12g")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)
-			.appName("Skyline")
 			.getOrCreate()
 
 		//correlated/correlated50000.csv
