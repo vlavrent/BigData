@@ -62,11 +62,29 @@ object dominanceScore_2d_utils {
 		val axis_point65 = axis_point6 + axis_point05
 		val axis_point75 = axis_point7 + axis_point05
 
+		val axis_point025 = axis_point05 / 2.0
+		val axis_point075 = axis_point05 + axis_point025
+		val axis_point125 = axis_point1 + axis_point025
+		val axis_point175 = axis_point15 + axis_point025
+		val axis_point225 = axis_point2 + axis_point025
+		val axis_point275 = axis_point25 + axis_point025
+		val axis_point325 = axis_point3 + axis_point025
+		val axis_point375 = axis_point35 + axis_point025
+		val axis_point425 = axis_point4 + axis_point025
+		val axis_point475 = axis_point45 + axis_point025
+		val axis_point525 = axis_point5 + axis_point025
+		val axis_point575 = axis_point55 + axis_point025
+		val axis_point625 = axis_point6 + axis_point025
+		val axis_point675 = axis_point65 + axis_point025
+		val axis_point725 = axis_point7 + axis_point025
+		val axis_point775 = axis_point75 + axis_point025
+
+
 		if(size==4)
 			List(axis_point2, axis_point4, axis_point6)
 		else if(size==8)
 			List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
-		else
+		else if(size==16)
 			List(
 				axis_point05,
 				axis_point1,
@@ -83,6 +101,40 @@ object dominanceScore_2d_utils {
 				axis_point65,
 				axis_point7,
 				axis_point75)
+		else
+			List(
+				axis_point025,
+				axis_point05,
+				axis_point075,
+				axis_point1,
+				axis_point125,
+				axis_point15,
+				axis_point175,
+				axis_point2,
+				axis_point225,
+				axis_point25,
+				axis_point275,
+				axis_point3,
+				axis_point325,
+				axis_point35,
+				axis_point375,
+				axis_point4,
+				axis_point425,
+				axis_point45,
+				axis_point475,
+				axis_point5,
+				axis_point525,
+				axis_point55,
+				axis_point575,
+				axis_point6,
+				axis_point625,
+				axis_point65,
+				axis_point675,
+				axis_point7,
+				axis_point725,
+				axis_point75,
+				axis_point675)
+
 	}
 
 	/** Creates the grid cells to check with pruning

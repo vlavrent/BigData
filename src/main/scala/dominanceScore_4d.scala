@@ -20,6 +20,7 @@ object dominanceScore_4d {
 			.setMaster("local[*]")
 			.setAppName("DominanceScore2d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size + "_" + t_axis_size)
 			.set("spark.executor.memory", "12g")
+			.set("spark.scheduler.mode", "FAIR")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)
 			.getOrCreate()
