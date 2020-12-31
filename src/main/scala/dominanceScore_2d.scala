@@ -5,6 +5,7 @@ import org.apache.spark.sql.functions.{avg, col, max}
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.SparkSession
 
+import scala.sys.exit
 import scala.util.control.Breaks._
 
 object dominanceScore_2d {
@@ -16,6 +17,7 @@ object dominanceScore_2d {
 
 		val conf = new SparkConf()
 			.setAppName("DominanceScore2d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size)
+			.setMaster("local[*]")
 //			.set("spark.scheduler.mode", "FAIR")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)
@@ -35,6 +37,9 @@ object dominanceScore_2d {
 		val x_axis = create_grid_axis(x_mean, x_axis_size)
 		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
+		println(x_axis)
+		println(y_axis)
+		exit()
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
 			df,
 			x_max,

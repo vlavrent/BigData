@@ -1,7 +1,8 @@
 package DominanceScoreUtils
 
 import breeze.linalg.max
-import org.apache.spark.sql.functions.{col, collect_list, lit, size}
+import breeze.numerics.log2
+import org.apache.spark.sql.functions.{col, collect_list, lit, log, size}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ListBuffer
@@ -44,96 +45,23 @@ object dominanceScore_2d_utils {
 	 *  @return a list with axis' lines
 	 */
 	def create_grid_axis(axis_mean:Double, size:Int): List[Double] ={
-		val axis_point4 = axis_mean
-		val axis_point2 = axis_point4 / 2.0
-		val axis_point1 = axis_point2 / 2.0
-		val axis_point3 = axis_point1 + axis_point2
 
-		val axis_point6 = axis_point2 + axis_point4
-		val axis_point5 = axis_point1 + axis_point4
-		val axis_point7 = axis_point3 + axis_point4
+		var first_point = axis_mean
+		val limit = (log2(size) - 1).toInt
 
-		val axis_point05 = axis_point1 / 2.0
-		val axis_point15 = axis_point1 + axis_point05
-		val axis_point25 = axis_point2 + axis_point05
-		val axis_point35 = axis_point3 + axis_point05
-		val axis_point45 = axis_point4 + axis_point05
-		val axis_point55 = axis_point5 + axis_point05
-		val axis_point65 = axis_point6 + axis_point05
-		val axis_point75 = axis_point7 + axis_point05
+		for(_ <- 0 until limit){
+				first_point = first_point / 2.0
+		}
 
-		val axis_point025 = axis_point05 / 2.0
-		val axis_point075 = axis_point05 + axis_point025
-		val axis_point125 = axis_point1 + axis_point025
-		val axis_point175 = axis_point15 + axis_point025
-		val axis_point225 = axis_point2 + axis_point025
-		val axis_point275 = axis_point25 + axis_point025
-		val axis_point325 = axis_point3 + axis_point025
-		val axis_point375 = axis_point35 + axis_point025
-		val axis_point425 = axis_point4 + axis_point025
-		val axis_point475 = axis_point45 + axis_point025
-		val axis_point525 = axis_point5 + axis_point025
-		val axis_point575 = axis_point55 + axis_point025
-		val axis_point625 = axis_point6 + axis_point025
-		val axis_point675 = axis_point65 + axis_point025
-		val axis_point725 = axis_point7 + axis_point025
-		val axis_point775 = axis_point75 + axis_point025
+		var axis_list = new ListBuffer[Double]
+		axis_list.append(first_point)
+		var current_point = first_point
+		for(_  <- 0 until size - 2){
+			current_point += first_point
+			axis_list.append(current_point)
+		}
 
-
-		if(size==4)
-			List(axis_point2, axis_point4, axis_point6)
-		else if(size==8)
-			List(axis_point1, axis_point2, axis_point3, axis_point4, axis_point5, axis_point6, axis_point7)
-		else if(size==16)
-			List(
-				axis_point05,
-				axis_point1,
-				axis_point15,
-				axis_point2,
-				axis_point25,
-				axis_point3,
-				axis_point35,
-				axis_point4,
-				axis_point45,
-				axis_point5,
-				axis_point55,
-				axis_point6,
-				axis_point65,
-				axis_point7,
-				axis_point75)
-		else
-			List(
-				axis_point025,
-				axis_point05,
-				axis_point075,
-				axis_point1,
-				axis_point125,
-				axis_point15,
-				axis_point175,
-				axis_point2,
-				axis_point225,
-				axis_point25,
-				axis_point275,
-				axis_point3,
-				axis_point325,
-				axis_point35,
-				axis_point375,
-				axis_point4,
-				axis_point425,
-				axis_point45,
-				axis_point475,
-				axis_point5,
-				axis_point525,
-				axis_point55,
-				axis_point575,
-				axis_point6,
-				axis_point625,
-				axis_point65,
-				axis_point675,
-				axis_point7,
-				axis_point725,
-				axis_point75,
-				axis_point775)
+		axis_list.toList
 
 	}
 
