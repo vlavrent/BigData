@@ -17,7 +17,7 @@ object dominanceScore_4d {
 		Logger.getLogger("akka").setLevel(Level.WARN)
 
 		val conf = new SparkConf()
-			.setAppName("DominanceScore2d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size + "_" + t_axis_size)
+			.setAppName("DominanceScore4d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size + "_" + t_axis_size)
 //			.set("spark.scheduler.mode", "FAIR")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)

@@ -1,0 +1,8 @@
+spark-submit --class dominanceScore_2d --master "local[*]" --executor-memory 12G bigdataproject_2.11-0.1.jar 5 ../../uniform/uniform10000000_2d.csv 16 16
+
+
+# standalone spark cluster
+start-master.sh
+start-slave.sh spark://manjaro:7077
+
+spark-submit --master spark://127.0.0.1:7077 --executor-cores 1 --total-executor-cores 12 --executor-memory 1g  --class dominanceScore_2d  bigdataproject_2.11-0.1.jar 5 ../../uniform/uniform1000000_2d.csv 32 32
