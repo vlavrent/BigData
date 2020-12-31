@@ -1,13 +1,11 @@
 package DominanceScoreUtils
 
-import breeze.linalg.max
 import breeze.numerics.log2
 import org.apache.spark.sql.functions.{col, collect_list, lit, log, size}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ListBuffer
-import scala.sys.exit
-import scala.util.control.Breaks.{break, breakable}
+
 
 object dominanceScore_2d_utils {
 

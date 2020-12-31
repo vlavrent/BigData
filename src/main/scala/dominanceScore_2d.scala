@@ -37,9 +37,6 @@ object dominanceScore_2d {
 		val x_axis = create_grid_axis(x_mean, x_axis_size)
 		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
-		println(x_axis)
-		println(y_axis)
-		exit()
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
 			df,
 			x_max,
