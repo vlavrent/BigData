@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-df = pd.read_csv('correlated/correlated100000_3d.csv', sep=',')
+df = pd.read_csv('Anti-Correlated/Anticorrelated10000_3d.csv', sep=',')
 # data = df.values
 # data = df[["0","1"]].values
 # plt.scatter(data[:, 0], data[:, 1])
