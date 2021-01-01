@@ -17,7 +17,6 @@ object dominanceScore_3d {
 
 		val conf = new SparkConf()
 			.setAppName("DominanceScore3d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size)
-			.setMaster("local[*]")
 //			.set("spark.scheduler.mode", "FAIR")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)
