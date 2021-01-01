@@ -131,12 +131,16 @@ object dominanceScore_2d_utils {
 			var fully_dominated_points = 0
 
 			for(cell <- grid_cells_with_counts) {
-				if (cell._1._1 == grid_cell._1._1 || cell._1._2 == grid_cell._1._2)
-					partially_dominated_points_count += cell._2._1
-				else if(cell._1._1 > grid_cell._1._1 && cell._1._2 > grid_cell._1._2)
-					fully_dominated_points += cell._2._1
+				if (cell._1._1 == grid_cell._1._1 || cell._1._2 == grid_cell._1._2) {
+					if (cell._1._1 >= grid_cell._1._1 && cell._1._2 >= grid_cell._1._2)
+						partially_dominated_points_count += cell._2._1
+				}
+				else if(cell._1._1 > grid_cell._1._1 && cell._1._2 > grid_cell._1._2) {
+						fully_dominated_points += cell._2._1
+				}
 			}
 
+			partially_dominated_points_count -= grid_cell._2._1
 			candidate_grid_cells_with_bound_scores.append(
 				(grid_cell._1,
 					grid_cell._2,

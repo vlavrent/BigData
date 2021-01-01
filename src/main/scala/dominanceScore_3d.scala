@@ -17,6 +17,7 @@ object dominanceScore_3d {
 
 		val conf = new SparkConf()
 			.setAppName("DominanceScore3d_top" + k + "_" + dataset_path + "_" + x_axis_size + "_" + y_axis_size + "_" + z_axis_size)
+			.setMaster("local[*]")
 //			.set("spark.scheduler.mode", "FAIR")
 		val sparkSession = SparkSession.builder
 			.config(conf = conf)
@@ -75,9 +76,9 @@ object dominanceScore_3d {
 					" AND " + " x > " + x_line_left + " AND  y > " + y_line_down +  " AND  z > " + z_line_low)
 
 			val cells_to_check_dominance_df = df.filter(
-				"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " AND z <= " + z_line_high + " AND z > " + z_line_low + " ) " +
-					" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " AND z <= " + z_line_high + " AND z > " + z_line_low + " ) " +
-					" OR " + " ( z > " + z_line_high + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " AND y <= " + y_line_up + " AND y > " + y_line_down +" ) " )
+				"( x <= " + x_line_right + " AND x > " + x_line_left + " AND y > " + y_line_up + " AND z > " + z_line_high + " ) " +
+					" OR " + " ( y <= " + y_line_up + " AND  y > " + y_line_down +  " AND x > " + x_line_right + " AND z > " + z_line_high + " ) " +
+					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_up + " ) " )
 
 			val guarantee_dominance_score = grid_cell._3._1
 
