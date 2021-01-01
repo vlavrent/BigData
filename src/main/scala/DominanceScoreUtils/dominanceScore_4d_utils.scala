@@ -131,13 +131,9 @@ object dominanceScore_4d_utils {
 		for(grid_cell <- grid_cells_with_counts_map){
 			var number_of_dominating_points = 0
 
-			for(dominating_cell <- ((grid_cell._1._1 -1 to 0) by -1 zip (grid_cell._1._2 - 1 to 0 by -1))
-				zip ((grid_cell._1._3 -1 to 0) by -1 zip (grid_cell._1._4 - 1 to 0 by -1))  map {
-				case ((x, y), (z, t))=> (x, y, z, t)}){
-
-				if(dominating_cell._1 >= 0 && dominating_cell._2 >= 0 && dominating_cell._3 >= 0 && dominating_cell._4 >= 0 ) {
-					number_of_dominating_points += grid_cells_with_counts_map(dominating_cell)._1
-				}
+			for(cell <- grid_cells_with_counts){
+				if (cell._1._1 < grid_cell._1._1 && cell._1._2 < grid_cell._1._2  && cell._1._3 < grid_cell._1._3 && cell._1._4 < grid_cell._1._4)
+					number_of_dominating_points += cell._2._1
 			}
 
 			if(number_of_dominating_points < k && grid_cell._2._1 > 0)
@@ -150,48 +146,20 @@ object dominanceScore_4d_utils {
 		for(grid_cell <- candidate_grid_cells){
 
 			var partially_dominated_points_count = 0
-			var j = grid_cell._1._2
-			var l = grid_cell._1._3
-			var h = grid_cell._1._4
-			for(i <- grid_cell._1._1 to x_axis_size){
-				partially_dominated_points_count += grid_cells_with_counts_map((i, j, l, h))._1
+			var fully_dominated_points = 0
+
+			for(cell <- grid_cells_with_counts) {
+				if (cell._1._1 == grid_cell._1._1 || cell._1._2 == grid_cell._1._2 || cell._1._3 == grid_cell._1._3 || cell._1._4 == grid_cell._1._4)
+					partially_dominated_points_count += cell._2._1
+				else if(cell._1._1 > grid_cell._1._1 && cell._1._2 > grid_cell._1._2 && cell._1._3 > grid_cell._1._3 && cell._1._4 > grid_cell._1._4)
+					fully_dominated_points += cell._2._1
 			}
-
-			var i = grid_cell._1._1
-			l = grid_cell._1._3
-			h = grid_cell._1._4
-			for(j <- grid_cell._1._2 to y_axis_size){
-				partially_dominated_points_count += grid_cells_with_counts_map((i, j, l, h))._1
-			}
-
-			i = grid_cell._1._1
-			j = grid_cell._1._2
-			h = grid_cell._1._4
-			for(l <- grid_cell._1._3 to z_axis_size){
-				partially_dominated_points_count += grid_cells_with_counts_map((i, j, l, h))._1
-			}
-
-			i = grid_cell._1._1
-			j = grid_cell._1._2
-			l = grid_cell._1._3
-			for(h <- grid_cell._1._4 to t_axis_size){
-				partially_dominated_points_count += grid_cells_with_counts_map((i, j, l, h))._1
-			}
-
-			partially_dominated_points_count -= grid_cell._2._1 * 3
-
-			var partially_and_fully_dominated_points_count = 0
-			for(i <- grid_cell._1._1 to x_axis_size)
-				for(j <- grid_cell._1._2 to y_axis_size)
-					for(l <- grid_cell._1._3 to z_axis_size)
-						for(h <- grid_cell._1._4 to t_axis_size)
-							partially_and_fully_dominated_points_count += grid_cells_with_counts_map((i, j, l, h))._1
 
 			candidate_grid_cells_with_bound_scores.append(
 				(grid_cell._1,
 					grid_cell._2,
-					(partially_and_fully_dominated_points_count - partially_dominated_points_count,
-						partially_and_fully_dominated_points_count)))
+					(fully_dominated_points,
+						fully_dominated_points + partially_dominated_points_count)))
 		}
 
 		var lower_bound_score = -1
