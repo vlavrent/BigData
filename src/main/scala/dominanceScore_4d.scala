@@ -90,7 +90,6 @@ object dominanceScore_4d {
 					" OR " + " ( y <= " + y_line_up + " AND  y > " + y_line_down +  " AND x > " + x_line_right + " AND z > " + z_line_high + " AND t > " + t_line_high + " ) " +
 					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_up + " AND t > " + t_line_high + " ) " +
 					" OR " + " ( t <= " + t_line_high + " AND  t > " + t_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_up + " AND z > " + z_line_high + " ) ")
-				.distinct()
 
 			val guarantee_dominance_score = grid_cell._3._1
 
