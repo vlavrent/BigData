@@ -53,7 +53,6 @@ object dominanceScore_3d {
 			z_axis,
 			k)
 
-		println(grid_cells_to_check)
 
 		println("cells to check: " + grid_cells_to_check.size)
 		println("points to check: " + grid_cells_to_check.map(_._2._1).sum)
