@@ -77,7 +77,7 @@ object dominanceScore_3d {
 			val cells_to_check_dominance_df = df.filter(
 				"( x <= " + x_line_right + " AND x > " + x_line_left + " AND y > " + y_line_up + " AND z > " + z_line_high + " ) " +
 					" OR " + " ( y <= " + y_line_up + " AND  y > " + y_line_down +  " AND x > " + x_line_right + " AND z > " + z_line_high + " ) " +
-					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_up + " ) " )
+					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_up + " ) " ).distinct()
 
 			val guarantee_dominance_score = grid_cell._3._1
 
