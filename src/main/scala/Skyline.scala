@@ -1,20 +1,15 @@
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{avg, col, collect_list, column, desc, expr, least, lit, max, min, rank, size, struct, udf, when}
-import org.apache.spark.sql.expressions.Window
-import org.apache.log4j.Logger
-import org.apache.log4j.Level
-import org.apache.spark
-import org.apache.spark.sql.types.{LongType, StructField, StructType}
-
-import scala.collection.mutable.ListBuffer
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ SparkSession}
 
 
 
  object bigdata {
 
 
-  def SaveCSV(saveSkyline:RDD[(Double,Double,Double)]){
+  def SaveCSV(saveSkyline:RDD[(Double,Double,Double)]) {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
@@ -69,8 +64,6 @@ import scala.collection.mutable.ListBuffer
     //Finding Global Skyline
     var miny = 2000.0
     var skyline : List[(Double,Double,Double)] = List()
-
-    rdd.sortBy(_._1).foreach(println)
     rdd.sortBy(_._1).map(x=>{if(x._2<miny){miny=x._2;skyline = skyline:+ (x._1,x._2,x._3);}; (skyline)})
 
     //Convert List to RDD and return
@@ -82,11 +75,7 @@ import scala.collection.mutable.ListBuffer
   }
 
 
-
-
   def main(args: Array[String]): Unit = {
-
-
 
     val dataset_path = //
 
@@ -100,9 +89,5 @@ import scala.collection.mutable.ListBuffer
     SaveCSV(saveSkyline)
 
 
-
   }
-
-
-
  }
