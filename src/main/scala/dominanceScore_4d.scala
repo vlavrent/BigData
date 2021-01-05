@@ -48,7 +48,7 @@ object dominanceScore_4d {
 		val z_axis = create_grid_axis(z_mean, z_axis_size)
 		val t_axis = create_grid_axis(t_mean, t_axis_size)
 
-		val grid_cells_to_check = create_grid_cells_to_check_4d(
+		val results = create_grid_cells_to_check_4d(
 			df,
 			x_max,
 			y_max,
@@ -60,6 +60,8 @@ object dominanceScore_4d {
 			t_axis,
 			k)
 
+		val grid_cells_to_check = results._1
+		val grid_cells_with_counts = results._2
 		println("cells to check: " + grid_cells_to_check.size)
 		println("points to check: " + grid_cells_to_check.map(_._2._1).sum)
 
@@ -85,17 +87,35 @@ object dominanceScore_4d {
 					" AND " + " x > " + x_line_left + " AND  y > " + y_line_down +  " AND  z > " + z_line_low +
 					" AND  t > " + t_line_low)
 
-			val cells_to_check_dominance_df = df.filter(
-				"( x <= " + x_line_right + " AND x > " + x_line_left + " AND y > " + y_line_down + " AND z > " + z_line_low + " AND t > " + t_line_low + " ) " +
-					" OR " + " ( y <= " + y_line_up + " AND  y > " + y_line_down +  " AND x > " + x_line_right + " AND z > " + z_line_high + " AND t > " + t_line_high + " ) " +
-					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_down + " AND t > " + t_line_high + " ) " +
-					" OR " + " ( t <= " + t_line_high + " AND  t > " + t_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_down + " AND z > " + z_line_high + " ) ")
+			var query = ""
+			var first = true
+			for(cell <- grid_cells_with_counts) {
 
+				if (cell._1._1 == grid_cell._1._1 || cell._1._2 == grid_cell._1._2 || cell._1._3 == grid_cell._1._3 || cell._1._4 == grid_cell._1._4) {
+					if (cell._1._1 >= grid_cell._1._1 && cell._1._2 >= grid_cell._1._2 && cell._1._3 >= grid_cell._1._3 && cell._1._4 >= grid_cell._1._4) {
+						if (!first)
+							query += " OR "
+						query += "( x <= " + cell._2._3 + " AND y <= " + cell._2._4 + " AND z <= " + cell._2._6 +
+							" AND t <= " + cell._2._8 +
+							" AND " + " x > " + cell._2._2 + " AND  y > " + cell._2._5 + " AND  z > " + cell._2._7 +
+							" AND  t > " + cell._2._9 + " ) "
+						first = false
+					}
+				}
+			}
+
+//			val cells_to_check_dominance_df = df.filter(
+//				"( x <= " + x_line_right + " AND x > " + x_line_left + " AND y > " + y_line_down + " AND z > " + z_line_low + " AND t > " + t_line_low + " ) " +
+//					" OR " + " ( y <= " + y_line_up + " AND  y > " + y_line_down +  " AND x > " + x_line_right + " AND z > " + z_line_high + " AND t > " + t_line_high + " ) " +
+//					" OR " + " ( z <= " + z_line_high + " AND  z > " + z_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_down + " AND t > " + t_line_high + " ) " +
+//					" OR " + " ( t <= " + t_line_high + " AND  t > " + t_line_low +  " AND x > " + x_line_right + " AND y > " + y_line_down + " AND z > " + z_line_high + " ) ")
+
+			val cells_to_check_dominance_df = df.filter(query)
 			val guarantee_dominance_score = grid_cell._3._1
 
 			val cell_scores_df = calculate_dominance_score_4d(
 				cell_dominator_df,
-				cells_to_check_dominance_df.union(cell_dominator_df),
+				cells_to_check_dominance_df,
 				sparkSession,
 				guarantee_dominance_score)
 

@@ -66,7 +66,8 @@ object dominanceScore_4d_utils {
 																		 z_axis:List[Double],
 																		 t_axis:List[Double],
 																		 k:Int):
-	ListBuffer[((Int, Int, Int, Int), (Int, Double, Double, Double, Double, Double, Double, Double, Double), (Int, Int))] ={
+	(ListBuffer[((Int, Int, Int, Int), (Int, Double, Double, Double, Double, Double, Double, Double, Double), (Int, Int))],
+	ListBuffer[((Int, Int, Int, Int), (Int, Double, Double, Double, Double, Double, Double, Double, Double))])={
 
 		val x_axis_size:Int = x_axis.size
 		val y_axis_size:Int = y_axis.size
@@ -181,7 +182,8 @@ object dominanceScore_4d_utils {
 				prunned_candidate_grid_cells.append(grid_cell)
 
 
-		prunned_candidate_grid_cells
+		Tuple2(prunned_candidate_grid_cells, grid_cells_with_counts)
+
 	}
 
 
