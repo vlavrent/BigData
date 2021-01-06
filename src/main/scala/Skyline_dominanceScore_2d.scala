@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 
 object Skyline_dominanceScore_2d {
 
-	def get_top_k_dominant_2d(k:Int, dataset_path:String, x_axis_size:Int, y_axis_size:Int): Unit ={
+	def get_top_k_dominant_2d(k:Int, dataset_path:String, x_axis_size:Int, y_axis_size:Int, skyline_dataset_path:String): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
 		Logger.getLogger("akka").setLevel(Level.WARN)
@@ -38,7 +38,7 @@ object Skyline_dominanceScore_2d {
 		// code to get skyline
 		val skyline = sparkSession.read.option("header", "true").csv(skyline_dataset_path)
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
-		val sky = skyline.select("x","y","id").rdd.map(x=>(x.get(0),x.get(1),x.get(2)))
+		val sky = skyline.select("x","y","id").rdd.map(x=>(x.get(0),x.get(1),x.get(2))).collect().toList
 
 		val skyline = List((10.50646332, 10.132206, 457),
 			(10.37956577, 11.12590036, 94500),
@@ -106,6 +106,7 @@ object Skyline_dominanceScore_2d {
 		val dataset_path = args(1)
 		val x_axis_size = args(2)
 		val y_axis_size = args(3)
-		get_top_k_dominant_2d(k.toInt, dataset_path, x_axis_size.toInt, y_axis_size.toInt)
+		val skyline_dataset_path = args(4)
+		get_top_k_dominant_2d(k.toInt, dataset_path, x_axis_size.toInt, y_axis_size.toInt,skyline_dataset_path)
 	}
 }
