@@ -24,11 +24,11 @@ object SkylineDominanceScore2d_utils {
 																		 x_axis:List[Double],
 																		 y_axis:List[Double],
 																		 skyline: List[(Double, Double, Int)],
-																		 k:Int): ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))] ={
+																		 k:Int): ListBuffer[((Int, Int), (Int, Double, Double, Double, Double, Int), (Int, Int))] ={
 
 		val x_axis_size:Int = x_axis.size
 		val y_axis_size:Int = y_axis.size
-		var grid_cells_with_counts = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double))]
+		var grid_cells_with_counts = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double, Int))]
 		for(i <- 0 to x_axis_size){
 			for(j <- 0 to y_axis_size){
 				val grid_cell = (i, j)
@@ -47,36 +47,36 @@ object SkylineDominanceScore2d_utils {
 				val number_of_points_in_cell = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
 					" AND " + " x > " + x_line_left + " AND  y > " + y_line_down).count().toInt
 
+				var skyline_points_in_cell = 0
+				for (point <- skyline){
+					if (point._1 <= x_line_right && point._2 <= y_line_up && point._1 > x_line_left && point._2> y_line_down){
+						skyline_points_in_cell += 1
+					}
+				}
 				//
 				grid_cells_with_counts.append(
-					(grid_cell, (number_of_points_in_cell, x_line_left, x_line_right, y_line_up, y_line_down)))
+					(grid_cell, (number_of_points_in_cell, x_line_left, x_line_right, y_line_up, y_line_down, skyline_points_in_cell)))
 
 			}
 		}
 
 		val grid_cells_with_counts_map = grid_cells_with_counts.toMap
 
-		var candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double))]
+		var candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double, Int))]
 		for(grid_cell <- grid_cells_with_counts_map){
-			var number_of_dominating_points = 0
+			var number_of_skyline_dominating_points = 0
 
 			for(cell <- grid_cells_with_counts){
 				if (cell._1._1 < grid_cell._1._1 && cell._1._2 < grid_cell._1._2)
-					number_of_dominating_points += cell._2._1
+					number_of_skyline_dominating_points += cell._2._6
 			}
 
-			var has_skyline_point = false
-			for (point <- skyline){
-
-				if (point._1 <= grid_cell._2._3 && point._2 <= grid_cell._2._4 && point._1 > grid_cell._2._2 && point._2> grid_cell._2._5){
-					has_skyline_point = true
-				}
-			}
-			if(number_of_dominating_points < k && grid_cell._2._1 > 0 && has_skyline_point)
+			if(grid_cell._2._1 > 0 && grid_cell._2._6 > 0 && number_of_skyline_dominating_points < k ) {
 				candidate_grid_cells.append(grid_cell)
+			}
 		}
 
-		var candidate_grid_cells_with_bound_scores =  new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))]
+		var candidate_grid_cells_with_bound_scores =  new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double, Int), (Int, Int))]
 		for(grid_cell <- candidate_grid_cells){
 
 			var partially_dominated_points_count = 0
@@ -102,14 +102,14 @@ object SkylineDominanceScore2d_utils {
 
 		var lower_bound_score = -1
 		for( grid_cell <- candidate_grid_cells_with_bound_scores)
-			if(grid_cell._2._1 >= k && grid_cell._3._1 > lower_bound_score)
+			if(grid_cell._2._6 >= k && grid_cell._3._1 > lower_bound_score)
 				lower_bound_score = grid_cell._3._1
 
-
-		var prunned_candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double), (Int, Int))]
+		var prunned_candidate_grid_cells = new ListBuffer[((Int, Int), (Int, Double, Double, Double, Double, Int), (Int, Int))]
 		for( grid_cell <- candidate_grid_cells_with_bound_scores)
-			if(grid_cell._3._2 >= lower_bound_score)
+			if(grid_cell._3._2 >= lower_bound_score) {
 				prunned_candidate_grid_cells.append(grid_cell)
+			}
 
 
 		prunned_candidate_grid_cells
