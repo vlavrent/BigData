@@ -37,7 +37,7 @@ object Skyline_dominanceScore_2d {
 
 		// code to get skyline
 		val sky = sparkSession.read.option("header", "true").csv(dataset_path)
-			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
+			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id").cast("int"))
 		val skyline = sky.select("x","y","id").rdd.map(x=>(x.getDouble(0),x.getDouble(1),x.getInt(2))).collect().toList
 
 
