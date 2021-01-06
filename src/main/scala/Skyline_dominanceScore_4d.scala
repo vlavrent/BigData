@@ -1,5 +1,6 @@
 import DominanceScoreUtils.dominanceScore_2d_utils.create_grid_axis
-import DominanceScoreUtils.dominanceScore_4d_utils.{calculate_dominance_score_4d, create_grid_cells_to_check_4d}
+import DominanceScoreUtils.dominanceScore_4d_utils.calculate_dominance_score_4d
+import SkylineDominanceScoreUtils.SkylineDominanceScore4d_utils.create_grid_cells_to_check_4d
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -8,7 +9,14 @@ import org.apache.spark.sql.types.DoubleType
 
 object Skyline_dominanceScore_4d {
 
-	def get_top_k_dominant_4d(k:Int, dataset_path:String,  x_axis_size:Int, y_axis_size:Int, z_axis_size:Int, t_axis_size:Int): Unit ={
+	def get_top_k_dominant_4d(
+														 k:Int,
+														 dataset_path:String,
+														 x_axis_size:Int,
+														 y_axis_size:Int,
+														 z_axis_size:Int,
+														 t_axis_size:Int,
+														 skyline_dataset_path:String): Unit ={
 
 		Logger.getLogger("org").setLevel(Level.WARN)
 		Logger.getLogger("akka").setLevel(Level.WARN)
@@ -45,6 +53,22 @@ object Skyline_dominanceScore_4d {
 		val z_axis = create_grid_axis(z_mean, z_axis_size)
 		val t_axis = create_grid_axis(t_mean, t_axis_size)
 
+		val skyline_df = sparkSession.read.option("header", "true").csv(skyline_dataset_path)
+			.select(
+				col("0").cast(DoubleType).alias("x"),
+				col("1").cast(DoubleType).alias("y"),
+				col("2").cast(DoubleType).alias("z"),
+				col("3").cast(DoubleType).alias("t"),
+				col("id").cast("int"))
+		val skyline = skyline_df.select("x","y", "z", "t", "id")
+			.rdd.map(
+			row =>(
+				row.getDouble(0),
+				row.getDouble(1),
+				row.getDouble(2),
+				row.getDouble(3),
+				row.getInt(4))).collect().toList
+
 		val results = create_grid_cells_to_check_4d(
 			df,
 			x_max,
@@ -55,14 +79,14 @@ object Skyline_dominanceScore_4d {
 			y_axis,
 			z_axis,
 			t_axis,
+			skyline,
 			k)
 
 		val grid_cells_to_check = results._1
 		val grid_cells_with_counts = results._2
 		println("cells to check: " + grid_cells_to_check.size)
-		println("points to check: " + grid_cells_to_check.map(_._2._1).sum)
+		println("points to check: " + grid_cells_to_check.map(_._2._10).sum)
 
-		var points_checked = 0
 		import sparkSession.implicits._
 
 		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
@@ -78,7 +102,7 @@ object Skyline_dominanceScore_4d {
 			val t_line_high = grid_cell._2._8
 			val t_line_low = grid_cell._2._9
 
-			val cell_dominator_df = df.filter(
+			val points_to_check_df = skyline_df.filter(
 				"x <= " + x_line_right + " AND y <= " + y_line_up +  " AND z <= " + z_line_high +
 					" AND t <= " + t_line_high +
 					" AND " + " x > " + x_line_left + " AND  y > " + y_line_down +  " AND  z > " + z_line_low +
@@ -111,7 +135,7 @@ object Skyline_dominanceScore_4d {
 			val guarantee_dominance_score = grid_cell._3._1
 
 			val cell_scores_df = calculate_dominance_score_4d(
-				cell_dominator_df,
+				points_to_check_df,
 				cells_to_check_dominance_df,
 				sparkSession,
 				guarantee_dominance_score)
@@ -131,7 +155,15 @@ object Skyline_dominanceScore_4d {
 		val y_axis_size = args(3)
 		val z_axis_size = args(4)
 		val t_axis_size = args(5)
-		get_top_k_dominant_4d(k.toInt, dataset_path, x_axis_size.toInt, y_axis_size.toInt, z_axis_size.toInt, t_axis_size.toInt)
+		val skyline_dataset_path = args(6)
+		get_top_k_dominant_4d(
+			k.toInt,
+			dataset_path,
+			x_axis_size.toInt,
+			y_axis_size.toInt,
+			z_axis_size.toInt,
+			t_axis_size.toInt,
+			skyline_dataset_path)
 	}
 
 

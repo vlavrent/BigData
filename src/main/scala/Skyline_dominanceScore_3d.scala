@@ -74,6 +74,7 @@ object Skyline_dominanceScore_3d {
 
 
 		println("cells to check: " + grid_cells_to_check.size)
+		println("points to check: " + grid_cells_to_check.map(_._2._8).sum)
 
 		import sparkSession.implicits._
 

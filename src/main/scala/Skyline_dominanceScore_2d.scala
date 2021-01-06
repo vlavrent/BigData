@@ -54,7 +54,7 @@ object Skyline_dominanceScore_2d {
 			k)
 
 		println("cells to check: " + grid_cells_to_check.size)
-
+		println("points to check: " + grid_cells_to_check.map(_._2._6).sum)
 		import sparkSession.implicits._
 
 		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
