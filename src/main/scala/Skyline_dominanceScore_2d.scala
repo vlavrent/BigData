@@ -63,6 +63,11 @@ object Skyline_dominanceScore_2d {
 
 		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
 
+		val skyline_df = sparkSession.createDataFrame(skyline)
+			.select(
+				col("_1").cast(DoubleType).alias("x"),
+				col("_2").cast(DoubleType).alias("y"),
+				col("_3").alias("id"))
 		for(grid_cell <- grid_cells_to_check){
 
 			val x_line_left = grid_cell._2._2
@@ -73,6 +78,9 @@ object Skyline_dominanceScore_2d {
 			val cell_dominator_df = df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
 				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
 
+			val points_to_check_df = skyline_df.filter("x <= " + x_line_right + " AND y <= " + y_line_up +
+				" AND " + " x > " + x_line_left + " AND  y > " + y_line_down)
+
 			val cells_to_check_dominance_df = df.filter(
 				"( x > " + x_line_right + " AND y <= " + y_line_up + " AND y > " + y_line_down + " ) " +
 					" OR " + " ( y > " + y_line_up + " AND  x <= " + x_line_right +  " AND x > " + x_line_left + " ) " )
@@ -80,7 +88,7 @@ object Skyline_dominanceScore_2d {
 			val guarantee_dominance_score = grid_cell._3._1
 
 			val cell_scores_df = calculate_dominance_score_2d(
-				cell_dominator_df,
+				points_to_check_df,
 				cells_to_check_dominance_df.union(cell_dominator_df),
 				sparkSession,
 				guarantee_dominance_score)

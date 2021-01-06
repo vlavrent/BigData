@@ -65,7 +65,13 @@ object SkylineDominanceScore2d_utils {
 					number_of_dominating_points += cell._2._1
 			}
 
-			if(number_of_dominating_points < k && grid_cell._2._1 > 0)
+			var has_skyline_point = false
+			for (point <- skyline){
+				if (point._1 <= grid_cell._2._3 && point._1 <= grid_cell._2._4 && point._2 > grid_cell._2._2 && point._2 > grid_cell._2._5){
+					has_skyline_point = true
+				}
+			}
+			if(number_of_dominating_points < k && grid_cell._2._1 > 0 && has_skyline_point)
 				candidate_grid_cells.append(grid_cell)
 		}
 
