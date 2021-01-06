@@ -39,7 +39,7 @@ object Skyline_dominanceScore_2d {
 		//
 		//
 
-		val skyline = List((10.50646332,10.132206, 457),
+		val skyline = List((10.50646332, 10.132206, 457),
 			(10.37956577, 11.12590036, 94500),
 			(13.12073157, 10.00053383, 5174),
 			(10.056831, 15.46942073, 9379),
@@ -56,7 +56,6 @@ object Skyline_dominanceScore_2d {
 			k)
 
 		println("cells to check: " + grid_cells_to_check.size)
-		println("points to check: " + grid_cells_to_check.map(_._2._1).sum)
 
 		var points_checked = 0
 		import sparkSession.implicits._

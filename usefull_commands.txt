@@ -5,4 +5,4 @@ spark-submit --class dominanceScore_2d --master "local[*]" --executor-memory 12G
 start-master.sh --host 127.0.0.1 
 start-slave.sh spark://127.0.0.1:7077
 
-spark-submit --master spark://127.0.0.1:7077 --executor-cores 1 --total-executor-cores 12 --executor-memory 1g  --class dominanceScore_2d  bigdataproject_2.11-0.1.jar 5 ../../uniform/uniform1000000_2d.csv 32 32
+spark-submit --master spark://127.0.0.1:7077 --executor-cores 12 --total-executor-cores 12 --executor-memory 12g  --class dominanceScore_2d  bigdataproject_2.11-0.1.jar 5 ../../uniform/uniform1000000_2d.csv 32 32
