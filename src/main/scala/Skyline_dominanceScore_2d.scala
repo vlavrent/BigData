@@ -36,15 +36,16 @@ object Skyline_dominanceScore_2d {
 		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
 		// code to get skyline
-		val skyline = sparkSession.read.option("header", "true").csv(skyline_dataset_path)
+		val sky = sparkSession.read.option("header", "true").csv(dataset_path)
 			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
-		val sky = skyline.select("x","y","id").rdd.map(x=>(x.get(0),x.get(1),x.get(2))).collect().toList
+		val skyline = sky.select("x","y","id").rdd.map(x=>(x.getDouble(0),x.getDouble(1),x.getInt(2))).collect().toList
 
-		val skyline = List((10.50646332, 10.132206, 457),
-			(10.37956577, 11.12590036, 94500),
-			(13.12073157, 10.00053383, 5174),
-			(10.056831, 15.46942073, 9379),
-			(10.00818797, 22.65472621, 4884))
+
+		//val skyline = List((10.50646332, 10.132206, 457),
+			//(10.37956577, 11.12590036, 94500),
+			//(13.12073157, 10.00053383, 5174),
+			//(10.056831, 15.46942073, 9379),
+			//(10.00818797, 22.65472621, 4884))
 
 
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
