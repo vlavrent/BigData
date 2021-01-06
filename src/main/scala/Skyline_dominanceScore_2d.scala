@@ -5,6 +5,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{avg, col, max}
 import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.rdd.RDD
 
 object Skyline_dominanceScore_2d {
 
@@ -35,9 +36,9 @@ object Skyline_dominanceScore_2d {
 		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
 		// code to get skyline
-		//
-		//
-		//
+		val skyline = sparkSession.read.option("header", "true").csv(skyline_dataset_path)
+			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id"))
+		val sky = skyline.select("x","y","id").rdd.map(x=>(x.get(0),x.get(1),x.get(2)))
 
 		val skyline = List((10.50646332, 10.132206, 457),
 			(10.37956577, 11.12590036, 94500),
