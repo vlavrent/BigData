@@ -36,16 +36,12 @@ object Skyline_dominanceScore_2d {
 		val y_axis = create_grid_axis(y_mean, y_axis_size)
 
 		// code to get skyline
-		val sky = sparkSession.read.option("header", "true").csv(dataset_path)
-			.select(col("0").cast(DoubleType).alias("x"), col("1").cast(DoubleType).alias("y"), col("id").cast("int"))
-		val skyline = sky.select("x","y","id").rdd.map(x=>(x.getDouble(0),x.getDouble(1),x.getInt(2))).collect().toList
-
-
-		//val skyline = List((10.50646332, 10.132206, 457),
-			//(10.37956577, 11.12590036, 94500),
-			//(13.12073157, 10.00053383, 5174),
-			//(10.056831, 15.46942073, 9379),
-			//(10.00818797, 22.65472621, 4884))
+		val skyline_df = sparkSession.read.option("header", "true").csv(skyline_dataset_path)
+			.select(
+				col("0").cast(DoubleType).alias("x"),
+				col("1").cast(DoubleType).alias("y"),
+				col("id").cast("int"))
+		val skyline = skyline_df.select("x","y","id").rdd.map(row =>(row.getDouble(0),row.getDouble(1),row.getInt(2))).collect().toList
 
 
 		val grid_cells_to_check = create_grid_cells_to_check_2d(
@@ -59,16 +55,10 @@ object Skyline_dominanceScore_2d {
 
 		println("cells to check: " + grid_cells_to_check.size)
 
-		var points_checked = 0
 		import sparkSession.implicits._
 
 		var scoresDf = Seq.empty[(String, Int)].toDF("id", "score")
 
-		val skyline_df = sparkSession.createDataFrame(skyline)
-			.select(
-				col("_1").cast(DoubleType).alias("x"),
-				col("_2").cast(DoubleType).alias("y"),
-				col("_3").alias("id"))
 		for(grid_cell <- grid_cells_to_check){
 
 			val x_line_left = grid_cell._2._2
