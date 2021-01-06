@@ -120,7 +120,7 @@ object SkylineDominanceScore3d_utils {
 
 		var lower_bound_score = -1
 		for( grid_cell <- candidate_grid_cells_with_bound_scores)
-			if(grid_cell._2._6 >= k && grid_cell._3._1 > lower_bound_score)
+			if(grid_cell._2._8 >= k && grid_cell._3._1 > lower_bound_score)
 				lower_bound_score = grid_cell._3._1
 
 
