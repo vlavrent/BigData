@@ -20,80 +20,107 @@ object Skyline_4d {
     import sparkSession.implicits._
 
     val save = saveSkyline.coalesce(1).toDF("0","1","2","3","id")
-    print(saveSkyline.toDF().show())
-    save.write.option("header", "true").csv("skyline4d.csv")
+    save.write.option("header", "true").csv("skyline1000000_4d.csv")
 
 
   }
 
+
   def task1(dataset_path:String): RDD[(Double,Double,Double,Double,Double)] ={
+
+
+
+
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
 
     val conf = new SparkConf().setMaster("local[8]").setAppName("Skyline")
-    val sc = new SparkContext(conf)
+    val sc = new SparkContext(conf)//.set("spark.executor.cores","8")
+
+
+
 
     //Read csv and remove headers
     val rddFromFile = sc.textFile(dataset_path,4)
     val header = rddFromFile.first()
     val rdd1 = rddFromFile.filter(row => row != header).map(f=>{f.split(",")})
 
-    //Finding Local Skylines
-    val rdd = rdd1.map(n => {(n.map(_.toDouble))}).map(n=>Tuple5(n(0),n(1),n(2),n(3),n(4)))
-      .sortBy(_._1,true)
+    //Map values to double type, create Tuples, sort by the sum of the values of 1st, 2nd and 3rd dimensions
+    val rdd = rdd1.map(n => {(n.map(_.toDouble))}).map(n=>Tuple6(n(0),n(1),n(2),n(3),n(4),(n(0)+n(1)+n(2)+n(3))))
+      .sortBy(_._6,true)
       .mapPartitions( iterator => {
 
-        var miny = 2000.0
-        var minz = 2000.0
-        var minw = 2000.0
-        var sky : List[(Double,Double,Double,Double,Double)] = List()
+        var first = iterator.next()
+
+        var sky : List[(Double,Double,Double,Double,Double,Double)] = List()
+        sky = sky:+(first._1,first._2,first._3,first._4,first._5,first._6)
+
         while(iterator.hasNext) {
           var it = iterator.next()
-          if(it._2<miny && it._3<minz && it._4<minw){miny=it._2;minz=it._3;minw=it._4;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2<miny && it._3>minz && it._4>minw){miny=it._2;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2>miny && it._3<minz && it._4>minw){minz=it._3;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2>miny && it._3>minz && it._4<minw){minw=it._4;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2<miny && it._3<minz && it._4>minw){miny=it._2;minz=it._3;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2<miny && it._3>minz && it._4<minw){miny=it._2;minw=it._4;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
-          else if(it._2>miny && it._3<minz && it._4<minw){minz=it._3;minw=it._4;sky =sky:+ (it._1,it._2,it._3,it._4,it._5)}
+
+          var flag = true
+          var i = 0
+          while (i<sky.size && flag==true){
+            if((sky(i)._1<=it._1 && sky(i)._2 <= it._2 && sky(i)._3<=it._3 && sky(i)._4<it._4)
+              ||(sky(i)._1<=it._1 && sky(i)._2 <= it._2 && sky(i)._3<it._3 && sky(i)._4<=it._4)
+              ||(sky(i)._1<=it._1 && sky(i)._2 < it._2 && sky(i)._3<=it._3 && sky(i)._4<=it._4)
+              || (sky(i)._1<it._1 && sky(i)._2 <= it._2 && sky(i)._3<=it._3 && sky(i)._4<=it._4)
+            )flag=false;
+            else {flag=true}
+            i = i+1
+          }
+
+
+          if(flag==true){sky= sky:+(it._1,it._2,it._3,it._4,it._5,it._6)}
+
+
+
+
         }
         (sky.toIterator)
 
       }).collect()
 
-
-    //Finding Global Skyline
-    var miny = 2000.0
-    var minz = 2000.0
-    var minw = 2000.0
     var skyline : List[(Double,Double,Double,Double,Double)] = List()
 
 
-    rdd.sortBy(_._1).map(x=>{
-      if(x._2<miny && x._3<minz && x._4<minw){miny=x._2;minz=x._3;minw=x._4;skyline = skyline:+ (x._1,x._2,x._3,x._4,x._5);}
-      else if(x._2<miny && x._3>minz && x._4>minw){miny=x._2;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      else if(x._2>miny && x._3<minz && x._4>minw){minz=x._3;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      else if(x._2>miny && x._3>minz && x._4<minw){minw=x._4;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      else if(x._2<miny && x._3<minz && x._4>minw){miny=x._2;minz=x._3;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      else if(x._2<miny && x._3>minz && x._4<minw){miny=x._2;minw=x._4;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      else if(x._2>miny && x._3<minz && x._4<minw){minz=x._3;minw=x._4;skyline =skyline:+ (x._1,x._2,x._3,x._4,x._5)}
-      ; (skyline)})
+    val rdd2 = rdd.sortBy(_._6)
+    val first = rdd2.take(1)
 
-    println(skyline)
+
+    first.map(x=> {skyline = skyline:+(x._1,x._2,x._3,x._4,x._5) })
+
+    rdd2.drop(1).map(r=>{
+      var flag = true
+      var i = 0
+      while (i<skyline.size && flag==true){
+        if((skyline(i)._1<=r._1 && skyline(i)._2 <= r._2 && skyline(i)._3<=r._3 && skyline(i)._4<r._4)
+          ||(skyline(i)._1<=r._1 && skyline(i)._2 <= r._2 && skyline(i)._3<r._3 && skyline(i)._4<=r._4)
+          ||(skyline(i)._1<=r._1 && skyline(i)._2 < r._2 && skyline(i)._3<=r._3 && skyline(i)._4<=r._4)
+          ||(skyline(i)._1<r._1 && skyline(i)._2 <= r._2 && skyline(i)._3<=r._3 && skyline(i)._4<=r._4)
+        )flag=false;
+        else {flag=true}
+        i = i+1
+      }
+
+      if(flag==true){skyline = skyline:+(r._1,r._2,r._3,r._4,r._5)}
+    })
+
 
     //Convert List to RDD and return
     val saveSkyline = sc.parallelize(skyline)
-
     saveSkyline
+
 
 
   }
 
   def main(args: Array[String]): Unit = {
 
-    val dataset_path = args(0)
 
+
+    val dataset_path = args(0)
     val t1 = System.nanoTime
     val saveSkyline = task1(dataset_path)
     val duration = (System.nanoTime - t1)
@@ -104,8 +131,8 @@ object Skyline_4d {
 
 
 
-  }
 
+  }
 }
 
 
