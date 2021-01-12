@@ -104,7 +104,7 @@ object generator {
     generator.generate_kd(10000, "correlated", 3)
     generator.generate_kd(50000, "correlated", 3)
     generator.generate_kd(100000, "correlated", 3)
-    generator.generate_kd(500000, "correlated", 2)
+    generator.generate_kd(500000, "correlated", 3)
     generator.generate_kd(1000000, "correlated", 3)
     generator.generate_kd(100, "uniform", 3)
     generator.generate_kd(1000, "uniform", 3)
