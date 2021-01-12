@@ -72,7 +72,7 @@ object dominanceScore_4d_utils {
 		val x_axis_size:Int = x_axis.size
 		val y_axis_size:Int = y_axis.size
 		val z_axis_size:Int =	z_axis.size
-		val t_axis_size:Int =	z_axis.size
+		val t_axis_size:Int =	t_axis.size
 
 		var grid_cells_with_counts = new ListBuffer[((Int, Int, Int, Int), (Int, Double, Double, Double, Double, Double, Double, Double, Double))]
 		for(i <- 0 to x_axis_size){
