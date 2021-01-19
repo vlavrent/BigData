@@ -41,7 +41,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 
     //Read csv and remove headers
-    val rddFromFile = sc.textFile(dataset_path,4)
+    val rddFromFile = sc.textFile(dataset_path,12)
     val header = rddFromFile.first()
     val rdd1 = rddFromFile.filter(row => row != header).map(f=>{f.split(",")})
 
