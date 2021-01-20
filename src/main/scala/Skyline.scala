@@ -36,12 +36,12 @@ import org.apache.spark.{SparkConf, SparkContext}
     Logger.getLogger("akka").setLevel(Level.WARN)
 
 
-    val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline")
-    val sc = new SparkContext(conf)//.set("spark.executor.cores","8")
+    val conf = new SparkConf().setMaster("local[*]").setAppName("Skyline").set("spark.driver.memory", "8g")
+    val sc = new SparkContext(conf)
 
 
-    //Read csv and remove headers
-    val rddFromFile = sc.textFile(dataset_path,12)
+    //Read csv and remove headers, set partitions same as the number of cores
+    val rddFromFile = sc.textFile(dataset_path,6)
     val header = rddFromFile.first()
     val rdd1 = rddFromFile.filter(row => row != header).map(f=>{f.split(",")})
 
