@@ -41,7 +41,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 
     //Read csv and remove headers, set partitions same as the number of cores
-    val rddFromFile = sc.textFile(dataset_path,6)
+    val rddFromFile = sc.textFile(dataset_path,12)
     val header = rddFromFile.first()
     val rdd1 = rddFromFile.filter(row => row != header).map(f=>{f.split(",")})
 
