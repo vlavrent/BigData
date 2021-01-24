@@ -5,23 +5,31 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 #===========================Normal Distribution============================
-np.random.seed(9)
-N=10000
+#np.random.seed(9)
+N=50000
 
 
 #=======2D=======
-var1 = 0.1
-var2 = 0.1
-cov  = -0.09
+var1 = 60
+var2 = 60
+cov  = -53
 cov_matrix = [[var1,cov],[cov,var2]]
-mean = [1.5,1.5]
+mean = [50,50]
 #=======3D========
-#var1 = 0.1
-#var2 = 0.1
-#var3 = 0.1
-#cov  = -0.07
+#var1 = 50
+#var2 = 50
+#var3 = 50
+#cov  = -22
 #cov_matrix = [[var1,cov,cov],[cov,var2,cov],[cov,cov,var3]]
-#mean = [1.5,1.5,1.5]
+#mean = [50,50,50]
+#=======4D========
+#var1 = 50
+#var2 = 50
+#var3 = 50
+#var4 = 50
+#cov  = -16
+#cov_matrix = [[var1,cov,cov,cov],[cov,var2,cov,cov],[cov,cov,var3,cov],[cov,cov,cov,var4]]
+#mean = [50,50,50,50]
 
 data = np.random.multivariate_normal(mean,cov_matrix,size=N)
 
@@ -38,5 +46,14 @@ plt.show()
 
 #=====================Saving Data========================================
 data = pd.DataFrame(data)
-#data.to_csv("Anticorrelated.csv")
+num = []
+for i in range(1,N+1):
+    num.append(i)
+    
+
+    
+
+data["id"] = num
+print(data)
+data.to_csv("Anticorrelated50000_2d.csv",index=False)
 #plt.savefig("Anticorrelated.png")
