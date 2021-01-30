@@ -1,1 +1,2 @@
+# Scalable Processing of Dominance-Based Queries
 The following repo focuses on the exploration and discovery of Skyline and top-k dominating points, utilizing the Big Data unified processing engine Spark. The data point creation , as well as an analytical  explanation of the methods, employed for each task and their results, are thoroughly presented. 
